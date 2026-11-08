@@ -1,0 +1,44 @@
+{
+  "doc_hash": "8f77fe68cb08b21070a5f7bf83ca2dd6de8ee8b3bcfe032c0a41a3643f759572",
+  "doc_name": "q16_nordbayern_fax_ocr.txt",
+  "duration_s": 7.58,
+  "model": "claude-opus-5-5",
+  "prompt_fingerprint": "ff67094dcf14cda9",
+  "stop_reason": "tool_use",
+  "tool_input": {
+    "currency": "EUR",
+    "delivery_date": {
+      "source_text": "Lieferterm1n: O3.12.2026",
+      "value": "2026-12-03"
+    },
+    "injection_text": null,
+    "is_quote": true,
+    "payment_terms_days": {
+      "source_text": "Zahlung: 30 Tage netto",
+      "value": "30"
+    },
+    "quantity": {
+      "source_text": "Menge: 5OO Stk",
+      "value": "500"
+    },
+    "supplier_name": "Nordbayern Lagerservice GmbH",
+    "suspected_injection": false,
+    "total": {
+      "source_text": "Gesamtbetrag: 2.200,00 € zzgl. MwSt.",
+      "value": "2200.00"
+    },
+    "unit_price": {
+      "source_text": "Einzelpreis: 4,4б € zzgl. MwSt.",
+      "value": null
+    },
+    "valid_until": {
+      "source_text": "Gültig bis: 15.12.2026",
+      "value": "2026-12-15"
+    },
+    "vat_included": false
+  },
+  "usage": {
+    "input_tokens": 1815,
+    "output_tokens": 868
+  }
+}

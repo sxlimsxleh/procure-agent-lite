@@ -1,7 +1,7 @@
 {
   "doc_hash": "41df91101f2451ab83ffc8fb89c223a5860133df51f489a4e54cad06b5cfb24b",
   "doc_name": "q04_us_bearing_co.pdf",
-  "duration_s": 4.64,
+  "duration_s": 4.55,
   "model": "claude-opus-5-5",
   "prompt_fingerprint": "ff67094dcf14cda9",
   "stop_reason": "tool_use",
@@ -39,6 +39,6 @@
   },
   "usage": {
     "input_tokens": 1824,
-    "output_tokens": 531
+    "output_tokens": 525
   }
 }

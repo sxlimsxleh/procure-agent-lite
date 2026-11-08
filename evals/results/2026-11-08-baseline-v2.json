@@ -1,0 +1,139 @@
+{
+  "label": "baseline-v2",
+  "mode": "live",
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "prompt_fingerprint": "ff67094dcf14cda9",
+  "usage": {
+    "input_tokens": 30655,
+    "output_tokens": 8930
+  },
+  "cost_usd": "0.301220",
+  "duration_s": 77.49,
+  "fields": {
+    "supplier_name": {
+      "correct": 15,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    },
+    "currency": {
+      "correct": 15,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    },
+    "vat_included": {
+      "correct": 15,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    },
+    "unit_price": {
+      "correct": 14,
+      "wrong_accepted": 1,
+      "wrongly_flagged": 0,
+      "accuracy": 0.9333333333333333
+    },
+    "quantity": {
+      "correct": 15,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    },
+    "total": {
+      "correct": 15,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    },
+    "delivery_date": {
+      "correct": 15,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    },
+    "valid_until": {
+      "correct": 15,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    },
+    "payment_terms_days": {
+      "correct": 15,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    }
+  },
+  "overall": {
+    "correct": 134,
+    "wrong_accepted": 1,
+    "wrongly_flagged": 0,
+    "accuracy": 0.9925925925925926
+  },
+  "flags": {
+    "expired": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "total_mismatch": {
+      "tp": 1,
+      "fp": 1,
+      "fn": 0,
+      "precision": 0.5,
+      "recall": 1.0
+    },
+    "duplicate": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "suspected_injection": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "not_a_quote": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "superseded": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 1,
+      "precision": null,
+      "recall": 0.0
+    },
+    "field flagged (any field)": {
+      "tp": 7,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0
+    }
+  },
+  "docs_correct": 17,
+  "docs_total": 17,
+  "failures": [
+    {
+      "doc": "q15_lager_direkt_per100.eml",
+      "field": "unit_price",
+      "outcome": "wrong_accepted",
+      "expected": "4.38",
+      "got": "438.00",
+      "reason": null
+    }
+  ]
+}
