@@ -90,3 +90,4 @@ make demo      # end-to-end on PR-0001
 - Prefer boring, readable code over clever code. Type hints everywhere.
 - When you change behaviour, update tests and the README in the same commit.
 - After each milestone, give me a 5-bullet explanation of what you built and one thing I should double-check.
+- No Claude attribution in commit messages or PR descriptions (no `Co-Authored-By`, no session links).
