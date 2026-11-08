@@ -4,7 +4,7 @@ Turns a messy procurement inbox into a human-approved draft purchase order in a 
 system, with every number traceable to its source. Fictional customer: Brunner
 Antriebstechnik GmbH. Full brief and design rules: [CLAUDE.md](CLAUDE.md).
 
-> Status: milestone 4 of 8 (policy + scoring). Eval baseline not recorded yet. This README becomes the
+> Status: milestone 5 of 8 (mock SAP, idempotent writes, audit log). This README becomes the
 > deployment memo in milestone 8.
 
 ## Run
@@ -15,6 +15,7 @@ make test    # pytest
 make lint    # ruff
 make evals-recorded   # replay recorded LLM responses, no key needed (CI gate)
 make evals LABEL=baseline   # live run against Claude, needs .env (see .env.example)
+make erp     # mock SAP purchase order API on :8001 (FLAKY_RATE=0.3 by default)
 ```
 
 ## What is here so far
@@ -31,6 +32,9 @@ make evals LABEL=baseline   # live run against Claude, needs .env (see .env.exam
 | `src/procure/normalise.py` | Gross → net, FX → EUR, expiry vs. injected `today`, total ≠ qty × unit price |
 | `config/brunner.yaml` | Customer policy: VAT, fixed FX table, approval threshold, min. 3 valid quotes, blocked suppliers, scoring weights |
 | `src/procure/decide.py` | Policy exclusions, deterministic scoring, LLM rationale with template fallback |
+| `mock_erp/app.py` | Mock S/4HANA purchase order OData endpoint; flaky on purpose (503, 429 + Retry-After, lost responses) |
+| `src/procure/erp_client.py` | Draft PO in SAP terms; httpx + tenacity retries; idempotency key |
+| `src/procure/audit.py` | Append-only SQLite audit log (enforced by triggers) |
 
 ### How a value gets accepted
 
@@ -73,6 +77,19 @@ make evals LABEL=baseline   # live run against Claude, needs .env (see .env.exam
 On PR-0001 with perfect extraction: 4 valid quotes, **Müller Wälzlager wins at €2,230 net**
 (score 0.87). Reading the page-1 list price instead of the page-2 discount would not change the
 winner, but the PO would be €195 too high.
+
+## Writing to SAP safely
+
+Retries alone are dangerous: if SAP creates the PO and the response is lost, a retry creates a
+second one. Every request therefore carries `Idempotency-Key = sha256("PR-0001|100042|2230.00")`,
+built from business facts, so the same order always gets the same key, even from a second click
+on "approve". The mock ERP returns the existing PO for a repeated key (header
+`Idempotent-Replayed: true`) and rejects a reused key with a different body (409).
+
+The client retries 429/502/503/504 and transport errors up to 5 times, honouring `Retry-After`,
+otherwise exponential backoff with jitter. Tested: at `FLAKY_RATE=0.5` with lost responses, 5
+submissions of one PO leave exactly 1 PO (checked across 300 random seeds: 0 duplicates). A
+control test with a fresh random key per attempt creates duplicates.
 
 ## Evals
 

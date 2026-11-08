@@ -56,7 +56,16 @@ class CustomerConfig(StrictModel):
     vat_rate: Decimal = Field(ge=0, lt=1)
     fx_as_of: date
     fx_to_eur: dict[Currency, Decimal]
+    supplier_ids: dict[str, str] = Field(default_factory=dict)
     policy: Policy
+
+    def supplier_id(self, supplier_name: str) -> str | None:
+        """SAP supplier number, matched case- and whitespace-insensitively."""
+        key = collapse_ws(supplier_name).casefold()
+        for name, supplier_id in self.supplier_ids.items():
+            if collapse_ws(name).casefold() == key:
+                return supplier_id
+        return None
 
     @model_validator(mode="after")
     def _eur_is_one(self) -> Self:
