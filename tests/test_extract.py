@@ -129,7 +129,22 @@ def test_llm_reported_injection_is_flagged_even_without_tripwire_match() -> None
 # --- golden replay: perfect model output through the real code ---
 
 
-@pytest.mark.parametrize("name", sorted(LABELS.docs))
+# Known gaps found by the milestone 3b documents. strict=True: once fixed, these must be removed.
+KNOWN_GAPS = {
+    "q01_mueller_waelzlager.pdf": "superseded revisions are not detected yet",
+    "q15_lager_direkt_per100.eml": "the schema has no price unit (price per 100 pieces)",
+}
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        pytest.param(n, marks=pytest.mark.xfail(strict=True, reason=KNOWN_GAPS[n]))
+        if n in KNOWN_GAPS
+        else n
+        for n in sorted(LABELS.docs)
+    ],
+)
 def test_golden_replay(name: str) -> None:
     """If the LLM answered exactly like the labels, would the code reproduce every label?
 

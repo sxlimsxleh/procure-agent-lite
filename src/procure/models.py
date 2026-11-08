@@ -38,6 +38,7 @@ class QuoteFlag(StrEnum):
     DUPLICATE = "duplicate"  # same document already seen (sha256 match)
     SUSPECTED_INJECTION = "suspected_injection"  # document text tries to instruct the system
     NOT_A_QUOTE = "not_a_quote"  # e.g. a newsletter that landed in the inbox
+    SUPERSEDED = "superseded"  # the supplier sent a newer revision of this quote
 
 
 class ExtractedField(StrictModel, Generic[T]):

@@ -38,8 +38,10 @@
           "status": "ok"
         }
       },
-      "flags": [],
-      "notes": "German formats, net. Page 1 shows list price 4,85; the volume discount on page 2 (4,46 at 500 pcs) is what applies."
+      "flags": [
+        "superseded"
+      ],
+      "notes": "German formats, net. Page 1 shows list price 4,85; the volume discount on page 2 (4,46 at 500 pcs) is what applies. Superseded by q17 (Rev. 2 of the same quote number)."
     },
     "q02_alpentech.eml": {
       "quote": {
@@ -447,6 +449,159 @@
         "not_a_quote"
       ],
       "notes": "Marketing newsletter with a tempting '3,99 €' (gross, 'ab', while stocks last). Must not become a quote."
+    },
+    "q14_fraenkische_table.pdf": {
+      "quote": {
+        "supplier_name": "Fränkische Wälzlagerhandel GmbH",
+        "currency": "EUR",
+        "unit_price": {
+          "value": "4.63",
+          "source_text": "2 6205-2RS Rillenkugellager 6205-2RS 500 Stk 4,63 2.315,00",
+          "status": "ok"
+        },
+        "quantity": {
+          "value": "500",
+          "source_text": "2 6205-2RS Rillenkugellager 6205-2RS 500 Stk 4,63 2.315,00",
+          "status": "ok"
+        },
+        "total": {
+          "value": "2315.00",
+          "source_text": "2 6205-2RS Rillenkugellager 6205-2RS 500 Stk 4,63 2.315,00",
+          "status": "ok"
+        },
+        "vat_included": false,
+        "delivery_date": {
+          "value": "2026-12-08",
+          "source_text": "Liefertermin: 08.12.2026",
+          "status": "ok"
+        },
+        "valid_until": {
+          "value": "2026-12-10",
+          "source_text": "Gültig bis: 10.12.2026",
+          "status": "ok"
+        },
+        "payment_terms_days": {
+          "value": 45,
+          "source_text": "Zahlungsbedingungen: 45 Tage netto",
+          "status": "ok"
+        }
+      },
+      "flags": [],
+      "notes": "Multi-line table (pdfplumber flattens it). Total = the line amount for the requested item (2.315,00), not the grand total 3.876,50 which includes other bearings and freight."
+    },
+    "q15_lager_direkt_per100.eml": {
+      "quote": {
+        "supplier_name": "Lager-Direkt Passau GmbH",
+        "currency": "EUR",
+        "unit_price": {
+          "value": "4.38",
+          "source_text": "Preis je 100 Stück: 438,00 € netto",
+          "status": "ok"
+        },
+        "quantity": {
+          "value": "500",
+          "source_text": "Menge: 500 Stück",
+          "status": "ok"
+        },
+        "total": {
+          "value": "2190.00",
+          "source_text": "Gesamtpreis: 2.190,00 € netto",
+          "status": "ok"
+        },
+        "vat_included": false,
+        "delivery_date": {
+          "value": "2026-12-10",
+          "source_text": "Liefertermin: 10.12.2026",
+          "status": "ok"
+        },
+        "valid_until": {
+          "value": "2026-11-30",
+          "source_text": "Angebot gültig bis 30.11.2026",
+          "status": "ok"
+        },
+        "payment_terms_days": {
+          "value": 30,
+          "source_text": "Zahlungsziel: 30 Tage netto",
+          "status": "ok"
+        }
+      },
+      "flags": [],
+      "notes": "Price per 100 pieces. unit_price is the per-piece price 4.38, which is never written in the document: it follows from 438,00 per 100. The current schema cannot express a price unit."
+    },
+    "q16_nordbayern_fax_ocr.txt": {
+      "quote": {
+        "supplier_name": "Nordbayern Lagerservice GmbH",
+        "currency": "EUR",
+        "unit_price": {
+          "status": "flagged",
+          "reason": "OCR-garbled: '4,4б' could be 4.40 or 4.46"
+        },
+        "quantity": {
+          "status": "flagged",
+          "reason": "OCR-garbled: '5OO'"
+        },
+        "total": {
+          "value": "2200.00",
+          "source_text": "Gesamtbetrag: 2.200,00 € zzgl. MwSt.",
+          "status": "ok"
+        },
+        "vat_included": false,
+        "delivery_date": {
+          "status": "flagged",
+          "reason": "OCR-garbled: 'O3.12.2026'"
+        },
+        "valid_until": {
+          "value": "2026-12-15",
+          "source_text": "Gültig bis: 15.12.2026",
+          "status": "ok"
+        },
+        "payment_terms_days": {
+          "value": 30,
+          "source_text": "Zahlung: 30 Tage netto",
+          "status": "ok"
+        }
+      },
+      "flags": [],
+      "notes": "OCR of a fax. Values that cannot be read reliably must be flagged for a human, not repaired (policy decision, milestone 3b). Inferring 4.40 from the total would be a calculation, which extraction must never do."
+    },
+    "q17_mueller_rev2.eml": {
+      "quote": {
+        "supplier_name": "Müller Wälzlager GmbH",
+        "currency": "EUR",
+        "unit_price": {
+          "value": "4.41",
+          "source_text": "Einzelpreis: 4,41 € / Stück",
+          "status": "ok"
+        },
+        "quantity": {
+          "value": "500",
+          "source_text": "Menge: 500 Stück",
+          "status": "ok"
+        },
+        "total": {
+          "value": "2205.00",
+          "source_text": "Gesamtpreis: 2.205,00 € netto",
+          "status": "ok"
+        },
+        "vat_included": false,
+        "delivery_date": {
+          "value": "2026-12-04",
+          "source_text": "Liefertermin: 04.12.2026",
+          "status": "ok"
+        },
+        "valid_until": {
+          "value": "2026-12-04",
+          "source_text": "Gültig bis: 04.12.2026",
+          "status": "ok"
+        },
+        "payment_terms_days": {
+          "value": 30,
+          "source_text": "Zahlungsbedingungen: 30 Tage netto",
+          "status": "ok"
+        }
+      },
+      "flags": [],
+      "notes": "Rev. 2 of Müller's quote AN-2026-1187; replaces q01. Only this revision may compete."
     }
   }
 }

@@ -38,13 +38,25 @@ EINKAUF = "Einkauf Brunner <einkauf@brunner-antriebstechnik.example>"
 SMALL = "<small>"
 
 
-def make_pdf(pages: list[list[str]]) -> bytes:
+# A table row: one tuple of cell texts, drawn as bordered cells with these column widths (mm).
+TABLE_WIDTHS = (10, 26, 62, 16, 12, 28, 36)
+
+
+def make_pdf(pages: list[list[str | tuple[str, ...]]]) -> bytes:
     pdf = FPDF()
     pdf.set_creation_date(FIXED_TIME)
     pdf.add_font("DejaVu", fname=FONT_PATH)
     for lines in pages:
         pdf.add_page()
         for line in lines:
+            if isinstance(line, tuple):
+                pdf.set_font("DejaVu", size=9)
+                pdf.set_text_color(0, 0, 0)
+                for i, (cell, width) in enumerate(zip(line, TABLE_WIDTHS, strict=False)):
+                    align = "R" if i >= 3 and i != 4 else "L"  # numbers right-aligned
+                    pdf.cell(width, 7, cell, border=1, align=align)
+                pdf.ln(7)
+                continue
             if line.startswith(SMALL):
                 pdf.set_font("DejaVu", size=5)
                 pdf.set_text_color(170, 170, 170)
@@ -475,6 +487,128 @@ def q13() -> bytes:
     )
 
 
+# --- Milestone 3b: harder documents ------------------------------------------------------------
+
+
+def q14() -> bytes:
+    """Multi-line table: three other bearings, our 6205-2RS, freight, a grand total.
+    The total for PR-0001 is the line amount (2.315,00), not the grand total (3.876,50)."""
+    header = ("Pos", "Artikel-Nr.", "Bezeichnung", "Menge", "ME", "Preis/ME €", "Betrag €")
+    rows = [
+        ("1", "6204-2RS", "Rillenkugellager 6204-2RS", "200", "Stk", "3,71", "742,00"),
+        ("2", "6205-2RS", "Rillenkugellager 6205-2RS", "500", "Stk", "4,63", "2.315,00"),
+        ("3", "6206-2RS", "Rillenkugellager 6206-2RS", "100", "Stk", "5,82", "582,00"),
+        ("4", "6305-2RS", "Rillenkugellager 6305-2RS", "25", "Stk", "7,70", "192,50"),
+        ("5", "FR-01", "Fracht pauschal", "1", "psch", "45,00", "45,00"),
+    ]
+    return make_pdf(
+        [
+            [
+                "Fränkische Wälzlagerhandel GmbH · Hafenstraße 3 · 97424 Schweinfurt",
+                "",
+                "Angebot FW-26-3307",
+                "Datum: 05.11.2026",
+                "Kunde: Brunner Antriebstechnik GmbH, Einkauf",
+                "",
+                header,
+                *rows,
+                "",
+                "Summe netto: 3.876,50 €",
+                "zzgl. 19 % MwSt.: 736,54 €",
+                "Gesamtbetrag brutto: 4.613,04 €",
+                "",
+                "Liefertermin: 08.12.2026",
+                "Gültig bis: 10.12.2026",
+                "Zahlungsbedingungen: 45 Tage netto",
+            ]
+        ]
+    )
+
+
+def q15() -> bytes:
+    """Price per 100 pieces. The per-piece price (4,38) is never written in the document."""
+    return make_eml(
+        sender="Stefan Gruber <s.gruber@lager-direkt-passau.example>",
+        to=BUYER,
+        subject="Angebot Rillenkugellager 6205-2RS",
+        date="Fri, 06 Nov 2026 15:30:00 +0100",
+        body=(
+            "Sehr geehrte Frau Leitner,\n\n"
+            "gerne bieten wir Ihnen an:\n\n"
+            "Artikel: Rillenkugellager 6205-2RS\n"
+            "Menge: 500 Stück\n"
+            "Preis je 100 Stück: 438,00 € netto\n"
+            "Gesamtpreis: 2.190,00 € netto\n"
+            "Liefertermin: 10.12.2026\n"
+            "Angebot gültig bis 30.11.2026\n"
+            "Zahlungsziel: 30 Tage netto\n\n"
+            "Mit freundlichen Grüßen\n"
+            "Stefan Gruber\n"
+            "Lager-Direkt Passau GmbH\n"
+        ),
+        message_id="q15-lager-direkt",
+    )
+
+
+def q16() -> bytes:
+    """OCR of a faxed quote: O for 0, 1 for i, a Cyrillic б for 6. Unreadable values must be
+    flagged for a human, not repaired. Note 4,4б: 4.40 or 4.46? Only the total says 4.40."""
+    text = (
+        "--- FAX 08.11.2026 07:42 S.1/1 ---\n"
+        "Nordbayern Lagerservice GmbH\n"
+        "Angebot Nr. NL-4471\n"
+        "\n"
+        "Rillenkugellager 6205-2RS\n"
+        "Menge: 5OO Stk\n"
+        "Einzelpreis: 4,4б € zzgl. MwSt.\n"
+        "Gesamtbetrag: 2.200,00 € zzgl. MwSt.\n"
+        "Lieferterm1n: O3.12.2026\n"
+        "Gültig bis: 15.12.2026\n"
+        "Zahlung: 30 Tage netto\n"
+    )
+    return text.encode("utf-8")
+
+
+def q17() -> bytes:
+    """Müller's revised quote. It replaces q01 (same quote number, Rev. 2)."""
+    pdf = make_pdf(
+        [
+            [
+                "Müller Wälzlager GmbH · Hafenstraße 12 · 90443 Nürnberg",
+                "",
+                "An: Brunner Antriebstechnik GmbH, Einkauf, Industriestraße 5, 84130 Dingolfing",
+                "",
+                "ANGEBOT Nr. AN-2026-1187 Rev. 2",
+                "Datum: 06.11.2026",
+                "Ersetzt unser Angebot AN-2026-1187 vom 02.11.2026.",
+                "",
+                "Pos. 1  Rillenkugellager 6205-2RS, 25x52x15 mm",
+                "Menge: 500 Stück",
+                "Einzelpreis: 4,41 € / Stück",
+                "Gesamtpreis: 2.205,00 € netto",
+                "",
+                "Liefertermin: 04.12.2026",
+                "Gültig bis: 04.12.2026",
+                "Zahlungsbedingungen: 30 Tage netto",
+                "Alle Preise zzgl. 19 % MwSt.",
+            ]
+        ]
+    )
+    return make_eml(
+        sender="Katrin Vogel <k.vogel@mueller-waelzlager.example>",
+        to=BUYER,
+        subject="Korrigiertes Angebot AN-2026-1187 Rev. 2",
+        date="Fri, 06 Nov 2026 09:05:00 +0100",
+        body=(
+            "Sehr geehrte Frau Leitner,\n\n"
+            "anbei unser überarbeitetes Angebot. Es ersetzt unser Angebot vom 02.11.2026.\n\n"
+            "Viele Grüße\nKatrin Vogel\nMüller Wälzlager GmbH\n"
+        ),
+        message_id="q17-mueller-rev2",
+        attachment=("Angebot_AN-2026-1187_Rev2.pdf", pdf),
+    )
+
+
 DOCUMENTS = {
     "q01_mueller_waelzlager.pdf": q01,
     "q02_alpentech.eml": q02,
@@ -489,6 +623,10 @@ DOCUMENTS = {
     "q11_huber_pricelist.xlsx": q11,
     "q12_ostbayern_lager.pdf": q12,
     "q13_newsletter.eml": q13,
+    "q14_fraenkische_table.pdf": q14,
+    "q15_lager_direkt_per100.eml": q15,
+    "q16_nordbayern_fax_ocr.txt": q16,
+    "q17_mueller_rev2.eml": q17,
 }
 
 

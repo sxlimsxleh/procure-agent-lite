@@ -7,7 +7,7 @@ INBOX = Path(__file__).resolve().parent.parent / "data" / "inbox"
 
 def test_loads_all_supported_files() -> None:
     docs = load_inbox(INBOX)
-    assert len(docs) == 13
+    assert len(docs) == 17
     assert all(d.text for d in docs)
 
 

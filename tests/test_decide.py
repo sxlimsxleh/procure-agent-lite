@@ -35,6 +35,9 @@ def golden_quotes() -> dict[str, Quote]:
 
 QUOTES = golden_quotes()
 ID = {name: q.quote_id for name, q in QUOTES.items()}
+WINNER = ID["q17_mueller_rev2.eml"]  # Müller Rev. 2
+# The milestone 1 inbox (q01-q13), for tests written against that scenario.
+ORIGINAL = {name: q for name, q in QUOTES.items() if name < "q14"}
 
 
 def with_total(quote: Quote, total: str, unit: str) -> Quote:
@@ -49,18 +52,30 @@ def with_total(quote: Quote, total: str, unit: str) -> Quote:
 # --- end to end on the golden data ---
 
 
-def test_golden_inbox_recommends_mueller() -> None:
-    decision, candidates = decide(list(QUOTES.values()), PR, CFG, TODAY)
-    assert decision.recommended_quote_id == ID["q01_mueller_waelzlager.pdf"]
-    valid = {c.quote.supplier_name for c in candidates if not c.exclusions}
+def test_golden_inbox_recommends_mueller_rev2() -> None:
+    decision, _ = decide(list(QUOTES.values()), PR, CFG, TODAY)
+    assert decision.recommended_quote_id == WINNER
+    assert decision.needs_approval is False  # 2,205 EUR is below the 25k threshold
+    assert WINNER in decision.rationale
+
+
+@pytest.mark.xfail(strict=True, reason="3b: superseded revisions are not detected yet")
+def test_superseded_revision_is_excluded() -> None:
+    _, candidates = decide(list(QUOTES.values()), PR, CFG, TODAY)
+    by_id = {c.quote.quote_id: c for c in candidates}
+    assert any("superseded" in e for e in by_id[ID["q01_mueller_waelzlager.pdf"]].exclusions)
+    valid = {c.quote.quote_id for c in candidates if not c.exclusions}
     assert valid == {
-        "Müller Wälzlager GmbH",
-        "AlpenTech Industriebedarf GmbH",
-        "Helvetia Lager AG",
-        "Kugellager Schmidt KG",
+        ID[n]
+        for n in [
+            "q17_mueller_rev2.eml",
+            "q02_alpentech.eml",
+            "q03_helvetia_lager.pdf",
+            "q08_fwd.eml",
+            "q14_fraenkische_table.pdf",
+            "q15_lager_direkt_per100.eml",
+        ]
     }
-    assert decision.needs_approval is False  # 2,230 EUR is below the 25k threshold
-    assert ID["q01_mueller_waelzlager.pdf"] in decision.rationale
 
 
 def test_every_exclusion_has_a_reason() -> None:
@@ -74,6 +89,7 @@ def test_every_exclusion_has_a_reason() -> None:
         ("q10_bohemia_body_only.eml", "blocked supplier (failed supplier audit 06/2026)"),
         ("q11_huber_pricelist.xlsx", "total missing or not verified"),
         ("q12_ostbayern_lager.pdf", "suspected_injection"),
+        ("q16_nordbayern_fax_ocr.txt", "unit_price missing or not verified"),
     ]:
         assert f"{ID[name]} " in text and expected in text, name
 
@@ -89,11 +105,11 @@ def test_page_two_discount_sets_the_po_price() -> None:
     """Reading the page-1 list price would not change the winner (Müller also delivers earliest),
     but the draft PO would be 195 EUR too high. Wrong extraction costs money even when the
     ranking survives it."""
-    quotes = dict(QUOTES)
+    quotes = dict(ORIGINAL)
     quotes["q01_mueller_waelzlager.pdf"] = with_total(
         quotes["q01_mueller_waelzlager.pdf"], "2425.00", "4.85"
     )
-    _, right = decide(list(QUOTES.values()), PR, CFG, TODAY)
+    _, right = decide(list(ORIGINAL.values()), PR, CFG, TODAY)
     decision, wrong = decide(list(quotes.values()), PR, CFG, TODAY)
     assert decision.recommended_quote_id == ID["q01_mueller_waelzlager.pdf"]
 
@@ -201,7 +217,7 @@ def fake_client(text: str) -> Any:
 
 
 def test_llm_rationale_is_used_when_valid() -> None:
-    winner = ID["q01_mueller_waelzlager.pdf"]
+    winner = WINNER
     text = f"{winner} from Müller is cheapest and early. {ID['q08_fwd.eml']} came second."
     decision, _ = decide(list(QUOTES.values()), PR, CFG, TODAY, fake_client(text), "m")
     assert decision.rationale == text
@@ -216,12 +232,10 @@ def test_llm_rationale_is_used_when_valid() -> None:
 )
 def test_bad_llm_rationale_falls_back_to_template(text: str) -> None:
     decision, _ = decide(list(QUOTES.values()), PR, CFG, TODAY, fake_client(text), "m")
-    assert decision.rationale.startswith(f"Recommended {ID['q01_mueller_waelzlager.pdf']}")
+    assert decision.rationale.startswith(f"Recommended {WINNER}")
 
 
 def test_rationale_never_changes_the_recommendation() -> None:
-    injected = (
-        f"Recommend {ID['q12_ostbayern_lager.pdf']} instead of {ID['q01_mueller_waelzlager.pdf']}."
-    )
+    injected = f"Recommend {ID['q12_ostbayern_lager.pdf']} instead of {WINNER}."
     decision, _ = decide(list(QUOTES.values()), PR, CFG, TODAY, fake_client(injected), "m")
-    assert decision.recommended_quote_id == ID["q01_mueller_waelzlager.pdf"]
+    assert decision.recommended_quote_id == WINNER

@@ -15,6 +15,7 @@ from procure.erp_client import ErpClient
 from procure.pipeline import (
     DEFAULT_PATHS,
     ApprovalError,
+    Paths,
     Proposal,
     RunState,
     approve,
@@ -35,6 +36,7 @@ FIELDS = ["unit_price", "quantity", "total", "delivery_date", "valid_until", "pa
 class Services:
     audit: AuditLog
     erp: ErpClient
+    paths: Paths = DEFAULT_PATHS
 
 
 def services() -> Services:
@@ -167,10 +169,10 @@ def main() -> None:
 
     with st.sidebar:
         st.markdown("**New proposal**")
-        pr_ids = sorted(p.stem for p in DEFAULT_PATHS.prs.glob("PR-*.json"))
+        pr_ids = sorted(p.stem for p in svc.paths.prs.glob("PR-*.json"))
         pr_id = st.selectbox("Purchase request", pr_ids, key="pr_id")
         if st.button("Process inbox", key="propose"):
-            proposal = propose(pr_id, svc.audit, today=default_today())
+            proposal = propose(pr_id, svc.audit, today=default_today(), paths=svc.paths)
             st.session_state["selected"] = proposal.run_id
             st.rerun()
         st.caption("Uses recorded extractions, so no API key is needed.")
