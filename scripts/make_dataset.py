@@ -13,7 +13,6 @@ Run: make dataset
 """
 
 import io
-import os
 import re
 import zipfile
 from datetime import UTC, datetime
@@ -26,8 +25,10 @@ from openpyxl import Workbook
 ROOT = Path(__file__).resolve().parent.parent
 INBOX = ROOT / "data" / "inbox"
 
-# Core PDF fonts cannot encode "€", so we embed a Unicode TTF font.
-FONT_PATH = os.environ.get("DATASET_FONT", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
+# Core PDF fonts cannot encode "€", so we embed a Unicode TTF font. The font file is vendored
+# (not taken from the OS) because different DejaVu versions produce different PDF bytes, and the
+# committed files must be reproducible on any machine, including CI.
+FONT_PATH = Path(__file__).resolve().parent / "fonts" / "DejaVuSans.ttf"
 FIXED_TIME = datetime(2026, 11, 1, 9, 0, 0, tzinfo=UTC)
 
 BUYER = "Anna Leitner <a.leitner@brunner-antriebstechnik.example>"
