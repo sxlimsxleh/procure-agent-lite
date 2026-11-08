@@ -1,0 +1,12 @@
+{
+  "pr_id": "PR-0001",
+  "requester": "Anna Leitner",
+  "company_code": "1000",
+  "plant": "1010",
+  "material": "100-6205-2RS",
+  "description": "Rillenkugellager 6205-2RS, 25x52x15 mm",
+  "quantity": "500",
+  "unit": "ST",
+  "need_by": "2026-12-15",
+  "budget_eur": "3000.00"
+}

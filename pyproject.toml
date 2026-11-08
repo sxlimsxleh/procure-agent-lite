@@ -1,0 +1,34 @@
+[project]
+name = "procure-agent-lite"
+version = "0.1.0"
+description = "Messy procurement inbox -> human-approved draft PO in a mock SAP system"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "pydantic>=2.7",
+    "pdfplumber>=0.11",
+    "openpyxl>=3.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+    "fpdf2>=2.7",  # only used by scripts/make_dataset.py to generate the PDFs in data/inbox
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/procure"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
