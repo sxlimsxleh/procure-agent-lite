@@ -53,7 +53,6 @@ def run(tmp_path: Path, *extra: str) -> int:
                  "--results", str(tmp_path / "results"), *extra])  # fmt: skip
 
 
-@pytest.mark.xfail(strict=True, reason="3b known gaps: price unit (q15), superseded (q01)")
 def test_golden_recordings_score_perfectly(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
     write_golden_recordings(tmp_path / "rec")
     assert run(tmp_path, "--label", "golden") == 0

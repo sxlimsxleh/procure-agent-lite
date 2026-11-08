@@ -4,7 +4,7 @@ Turns a messy procurement inbox into a human-approved draft purchase order in a 
 system, with every number traceable to its source. Fictional customer: Brunner
 Antriebstechnik GmbH. Full brief and design rules: [CLAUDE.md](CLAUDE.md).
 
-> Status: milestone 6 of 8 (end-to-end pipeline, approval UI, `make demo`). This README becomes the
+> Status: milestone 6 of 8 + milestone 3b (harder documents, before/after evals). Next: CI + Docker Compose. This README becomes the
 > deployment memo in milestone 8.
 
 ## Run
@@ -128,7 +128,37 @@ Each recording carries a fingerprint of the prompt and tool schema, so changing 
 without re-recording fails instead of reporting outdated numbers. Labelled runs are saved to
 `evals/results/<date>-<label>.md` and `.json`.
 
-| | Baseline | After fixes |
-|---|---|---|
-| Field accuracy | not recorded yet | – |
-| Wrong values accepted | not recorded yet | – |
+### Results
+
+| | Baseline v1 (13 docs) | Baseline v2 (17 docs) | After fixes (17 docs) |
+|---|---|---|---|
+| Field accuracy (9 fields) | 99/99 (100%) | 134/135 (99%) | **135/135 (100%)** |
+| **Wrong values accepted** | 0 | **1** | **0** |
+| `total_mismatch` precision | 100% | 50% | 100% |
+| `superseded` recall | – | 0% | 100% |
+| Est. cost per run | $0.22 | $0.30 | $0.33 |
+
+Baseline v1 was perfect, which on 13 self-made documents is weak evidence. Milestone 3b added
+four documents built around common failures and found:
+
+1. **Price per 100 pieces (q15): a wrong value accepted.** The model reported 438.00 as the unit
+   price. That number *is* in the document, so grounding accepted it; the schema had no way to say
+   "per 100". Fix: `record_quote` gets a `price_unit`, which must appear in the same source span,
+   and code divides (438.00 / 100 = 4.38, with the stated price kept in `reason`).
+2. **Revised quote (q17 replaces q01): missed.** Fix: extract the quote number; code groups quotes
+   by supplier + base number and flags all but the newest revision as `superseded`.
+3. **OCR noise (q16): grounding worked.** The model "repaired" `5OO` to 500 and `O3.12.2026` to
+   2026-12-03; both were rejected because the quoted text does not contain those values. Building
+   the test exposed a latent gap: `4,4б` was read as 4.4. Fix: numbers touching a letter or digit
+   are not read at all.
+
+In both live runs on q16 the model "repaired" the garbled quantity and delivery date, and both
+times grounding rejected the repaired values. That is the design working: the LLM guesses, the
+code refuses to accept a value the document does not contain.
+
+Reports: `evals/results/2026-11-08-baseline.md`, `-baseline-v2.md`, `-after.md`. With correct
+extraction, PR-0001 now goes to **Müller Wälzlager Rev. 2 at €2,205 net**; their first quote is
+excluded as superseded.
+
+Caveat: 17 self-made documents and one run per configuration. This shows the failure modes are
+handled, not a production accuracy rate.

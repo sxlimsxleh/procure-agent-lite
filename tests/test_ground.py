@@ -134,8 +134,23 @@ def test_no_injection_in_normal_text(text: str) -> None:
     assert find_injection(text) is None
 
 
-@pytest.mark.xfail(strict=True, reason="3b: a number glued to letters (OCR noise) is still read")
 def test_ocr_number_glued_to_letters_is_not_grounded() -> None:
     """'4,4б': the б may be a garbled 6. Reading it as 4.4 would accept a guess as fact."""
     text = "Einzelpreis: 4,4б € zzgl. MwSt."
     assert ground_field("4.40", text, text, "decimal").status == "flagged"
+
+
+@pytest.mark.parametrize(
+    ("text", "absent"),
+    [
+        ("Menge: 5OO Stk", Decimal("5")),
+        ("Menge: 500Stk", Decimal("500")),
+        ("4,4б €", Decimal("4.4")),
+    ],
+)
+def test_numbers_touching_letters_are_ignored(text: str, absent: Decimal) -> None:
+    assert absent not in number_candidates(text)
+
+
+def test_article_numbers_still_read_their_digits() -> None:
+    assert Decimal("6205") in number_candidates("Rillenkugellager 6205-2RS")

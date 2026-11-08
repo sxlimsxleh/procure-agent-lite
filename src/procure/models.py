@@ -93,6 +93,7 @@ class Quote(StrictModel):
     doc_hash: str = Field(pattern=r"^[0-9a-f]{64}$")  # sha256 hex
     supplier_name: str
     currency: Currency
+    quote_number: str | None = None  # as written, incl. revision; kept only if in the document
     unit_price: ExtractedField[Decimal]
     quantity: ExtractedField[Decimal]
     total: ExtractedField[Decimal]
@@ -189,7 +190,9 @@ class GoldenQuote(StrictModel):
 
     supplier_name: str
     currency: Currency
-    unit_price: ExtractedField[Decimal]
+    quote_number: str | None = None
+    price_unit: int | None = None  # set only when the document prices per N pieces
+    unit_price: ExtractedField[Decimal]  # always per piece
     quantity: ExtractedField[Decimal]
     total: ExtractedField[Decimal]
     vat_included: bool | None

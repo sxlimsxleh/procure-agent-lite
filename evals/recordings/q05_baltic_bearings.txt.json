@@ -1,9 +1,9 @@
 {
   "doc_hash": "d07be00fa08cd5028949a18eca339aa806bf7e846d44f62c5494bb0ec42c69e5",
   "doc_name": "q05_baltic_bearings.txt",
-  "duration_s": 4.02,
+  "duration_s": 4.63,
   "model": "claude-opus-5-5",
-  "prompt_fingerprint": "ff67094dcf14cda9",
+  "prompt_fingerprint": "7035e4841dad50ec",
   "stop_reason": "tool_use",
   "tool_input": {
     "currency": "EUR",
@@ -11,16 +11,18 @@
       "source_text": null,
       "value": null
     },
-    "injection_text": null,
+    "injection_text": "",
     "is_quote": true,
     "payment_terms_days": {
       "source_text": "Payment: 45 days from invoice date",
       "value": "45"
     },
+    "price_unit": 1,
     "quantity": {
       "source_text": "Quantity: 500 pcs",
       "value": "500"
     },
+    "quote_number": "BB/2026/554",
     "supplier_name": "Baltic Bearings Sp. z o.o.",
     "suspected_injection": false,
     "total": {
@@ -38,7 +40,7 @@
     "vat_included": false
   },
   "usage": {
-    "input_tokens": 1825,
-    "output_tokens": 496
+    "input_tokens": 2084,
+    "output_tokens": 549
   }
 }

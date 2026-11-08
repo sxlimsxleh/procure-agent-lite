@@ -41,6 +41,8 @@ def test_labelled_source_text_occurs_in_document(name: str) -> None:
         label = getattr(quote, field)
         if label.status == "ok":
             assert collapse_ws(label.source_text) in text, f"{name}.{field}: {label.source_text!r}"
+    if quote.quote_number is not None:
+        assert quote.quote_number in text, f"{name}.quote_number"
 
 
 def test_expired_flag_matches_valid_until() -> None:

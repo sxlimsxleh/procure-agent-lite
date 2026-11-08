@@ -1,9 +1,9 @@
 {
   "doc_hash": "f5babb768bb25f458b32b7db3455d5020e34425d05aef9b6f077f63c88d5dbae",
   "doc_name": "q12_ostbayern_lager.pdf",
-  "duration_s": 5.78,
+  "duration_s": 5.26,
   "model": "claude-opus-5-5",
-  "prompt_fingerprint": "ff67094dcf14cda9",
+  "prompt_fingerprint": "7035e4841dad50ec",
   "stop_reason": "tool_use",
   "tool_input": {
     "currency": "EUR",
@@ -17,10 +17,12 @@
       "source_text": "Zahlungsbedingungen: 60 Tage netto",
       "value": "60"
     },
+    "price_unit": 1,
     "quantity": {
       "source_text": "Menge: 500 Stück",
       "value": "500"
     },
+    "quote_number": "OL-3390",
     "supplier_name": "Ostbayern Lager GmbH",
     "suspected_injection": true,
     "total": {
@@ -38,7 +40,7 @@
     "vat_included": false
   },
   "usage": {
-    "input_tokens": 1856,
-    "output_tokens": 621
+    "input_tokens": 2115,
+    "output_tokens": 628
   }
 }

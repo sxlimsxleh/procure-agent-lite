@@ -59,7 +59,6 @@ def test_golden_inbox_recommends_mueller_rev2() -> None:
     assert WINNER in decision.rationale
 
 
-@pytest.mark.xfail(strict=True, reason="3b: superseded revisions are not detected yet")
 def test_superseded_revision_is_excluded() -> None:
     _, candidates = decide(list(QUOTES.values()), PR, CFG, TODAY)
     by_id = {c.quote.quote_id: c for c in candidates}

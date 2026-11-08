@@ -4,6 +4,7 @@ VAT rate and FX table are parameters here; from milestone 4 they come from confi
 FX convention: `fx[currency]` = how many EUR one unit of that currency is worth (EUR -> 1).
 """
 
+import re
 from collections.abc import Mapping
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
@@ -62,3 +63,40 @@ def normalise_quote(quote: Quote, vat_rate: Decimal, fx: Mapping[str, Decimal]) 
         unit_price_net_eur=convert(quote.unit_price.value, UNIT_PRICE_PLACES),
         total_net_eur=convert(quote.total.value, CENT),
     )
+
+
+# "AN-2026-1187 Rev. 2", "... Revision 3", "...-V2", "... Version 2" -> base number + revision
+_REVISION = re.compile(r"[\s\-_/]*(?:rev(?:ision)?\.?|version|v)\s*(\d+)\s*$", re.IGNORECASE)
+
+
+def split_revision(quote_number: str) -> tuple[str, int]:
+    """("AN-2026-1187 Rev. 2") -> ("an-2026-1187", 2). No revision marker -> revision 0."""
+    match = _REVISION.search(quote_number)
+    base = quote_number[: match.start()] if match else quote_number
+    revision = int(match.group(1)) if match else 0
+    return " ".join(base.split()).casefold(), revision
+
+
+def mark_superseded(quotes: list[Quote]) -> list[Quote]:
+    """Flag every quote that has a newer revision from the same supplier (same base number).
+
+    Quotes without a quote number are never grouped: we do not guess that two quotes belong
+    together. Two quotes with the same number and revision are left alone (no newest one).
+    """
+    groups: dict[tuple[str, str], list[tuple[int, int]]] = {}  # key -> [(revision, index)]
+    for i, q in enumerate(quotes):
+        if q.quote_number:
+            base, revision = split_revision(q.quote_number)
+            key = (" ".join(q.supplier_name.split()).casefold(), base)
+            groups.setdefault(key, []).append((revision, i))
+    superseded: set[int] = set()
+    for members in groups.values():
+        newest = max(rev for rev, _ in members)
+        if sum(rev == newest for rev, _ in members) == 1:
+            superseded |= {i for rev, i in members if rev < newest}
+    return [
+        q.model_copy(update={"flags": list(dict.fromkeys([*q.flags, QuoteFlag.SUPERSEDED]))})
+        if i in superseded
+        else q
+        for i, q in enumerate(quotes)
+    ]

@@ -7,7 +7,9 @@ from procure.models import ExtractedField, Quote, QuoteFlag
 from procure.normalise import (
     check_quote,
     is_expired,
+    mark_superseded,
     normalise_quote,
+    split_revision,
     to_eur,
     to_net,
     total_matches,
@@ -90,3 +92,39 @@ def test_normalise_gross_chf() -> None:
 def test_normalise_refuses_to_guess_vat() -> None:
     n = normalise_quote(quote(vat_included=None), VAT, FX)
     assert n.unit_price_net_eur is None and n.total_net_eur is None
+
+
+# --- superseded revisions ---
+
+
+@pytest.mark.parametrize(
+    ("number", "expected"),
+    [
+        ("AN-2026-1187 Rev. 2", ("an-2026-1187", 2)),
+        ("AN-2026-1187", ("an-2026-1187", 0)),
+        ("HL-26-0932 Revision 3", ("hl-26-0932", 3)),
+        ("OL-3390-V2", ("ol-3390", 2)),
+        ("BB/2026/554", ("bb/2026/554", 0)),
+    ],
+)
+def test_split_revision(number: str, expected: tuple[str, int]) -> None:
+    assert split_revision(number) == expected
+
+
+def test_older_revision_is_superseded() -> None:
+    old, new = quote(quote_number="AN-1"), quote(quote_number="AN-1 Rev. 2", quote_id="Q-11111111")
+    marked = mark_superseded([old, new])
+    assert marked[0].flags == [QuoteFlag.SUPERSEDED] and marked[1].flags == []
+
+
+@pytest.mark.parametrize(
+    ("a", "b"),
+    [
+        ({"quote_number": "AN-1"}, {"quote_number": "AN-1 Rev. 2", "supplier_name": "Other"}),
+        ({"quote_number": None}, {"quote_number": None}),  # no numbers: never guess they belong
+        ({"quote_number": "AN-1 Rev. 2"}, {"quote_number": "AN-1 Rev. 2"}),  # tie: no newest
+    ],
+)
+def test_not_superseded(a: dict, b: dict) -> None:
+    marked = mark_superseded([quote(**a), quote(quote_id="Q-11111111", **b)])
+    assert all(q.flags == [] for q in marked)
