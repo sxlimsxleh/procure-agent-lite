@@ -1,0 +1,46 @@
+name: Live evals
+
+# Manual only: Actions tab -> "Live evals" -> Run workflow.
+# Needs the repository secret ANTHROPIC_API_KEY (Settings -> Secrets and variables -> Actions).
+# Pushes the recordings and report to a new branch evals/<label>-<run id>; nothing lands on main
+# until someone merges it.
+
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        description: "Report label, e.g. baseline or after (lowercase letters, digits, dashes)"
+        required: true
+        default: baseline
+
+permissions:
+  contents: write
+
+jobs:
+  live-evals:
+    runs-on: ubuntu-latest
+    env:
+      LABEL: ${{ inputs.label }}  # passed via env, never pasted into the script (injection-safe)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Check label
+        run: '[[ "$LABEL" =~ ^[a-z0-9-]+$ ]] || { echo "invalid label: $LABEL"; exit 1; }'
+      - name: Install dependencies
+        run: uv sync --locked
+      - name: Run live evals
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL || 'claude-opus-5-5' }}
+        run: uv run python -m evals.run_evals --mode live --label "$LABEL"
+      - name: Show report in the run summary
+        run: cat evals/results/*-"$LABEL".md >> "$GITHUB_STEP_SUMMARY"
+      - name: Push recordings and report to a new branch
+        run: |
+          branch="evals/${LABEL}-${GITHUB_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add evals/recordings evals/results
+          git commit -m "Live evals: ${LABEL} (run ${GITHUB_RUN_ID})"
+          git push origin "$branch"
