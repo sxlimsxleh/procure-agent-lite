@@ -133,7 +133,8 @@ class DraftPO(StrictModel):
     CompanyCode: str
     Supplier: str = Field(min_length=1)
     DocumentCurrency: Currency
-    items: list[DraftPOItem] = Field(min_length=1)
+    # SAP's deep-insert navigation property for items; we keep the short name in Python.
+    items: list[DraftPOItem] = Field(min_length=1, serialization_alias="to_PurchaseOrderItem")
 
 
 class Usage(StrictModel):

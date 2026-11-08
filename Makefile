@@ -1,4 +1,4 @@
-.PHONY: setup test lint dataset evals evals-recorded
+.PHONY: setup test lint dataset evals evals-recorded erp
 
 setup:
 	uv sync
@@ -22,3 +22,7 @@ evals:
 # Replays evals/recordings/ without an API key. Fails if any wrong value is accepted (CI gate).
 evals-recorded:
 	uv run python -m evals.run_evals --mode recorded
+
+# Mock SAP purchase order API on :8001. FLAKY_RATE (default 0.3) and FLAKY_SEED control faults.
+erp:
+	uv run uvicorn mock_erp.app:app --port 8001

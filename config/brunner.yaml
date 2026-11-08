@@ -12,6 +12,15 @@ fx_to_eur:
   CHF: 1.05
   USD: 0.92
 
+# SAP supplier master (name -> supplier number). A winning supplier without a number gets no
+# PO: the buyer has to create the supplier in SAP first. Matching ignores case and spacing.
+supplier_ids:
+  Müller Wälzlager GmbH: "100042"
+  AlpenTech Industriebedarf GmbH: "100057"
+  Helvetia Lager AG: "100063"
+  Kugellager Schmidt KG: "100071"
+  Lagertechnik Franken GmbH: "100088"
+
 policy:
   # Above this net order value a second approver (head of purchasing) must sign off.
   # The buyer approves every draft PO regardless (design rule 1).
