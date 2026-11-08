@@ -1,9 +1,9 @@
 {
   "doc_hash": "74a85b7791dfe2822df13e8d26079fccc85170b31d886114b44be60d9562d929",
   "doc_name": "q03_helvetia_lager.pdf",
-  "duration_s": 4.44,
+  "duration_s": 4.53,
   "model": "claude-opus-5-5",
-  "prompt_fingerprint": "ff67094dcf14cda9",
+  "prompt_fingerprint": "7035e4841dad50ec",
   "stop_reason": "tool_use",
   "tool_input": {
     "currency": "CHF",
@@ -11,16 +11,18 @@
       "source_text": "Liefertermin: 11.12.2026",
       "value": "2026-12-11"
     },
-    "injection_text": null,
+    "injection_text": "",
     "is_quote": true,
     "payment_terms_days": {
       "source_text": "Zahlungskonditionen: 30 Tage netto",
       "value": "30"
     },
+    "price_unit": 1,
     "quantity": {
       "source_text": "Menge: 500 Stück",
       "value": "500"
     },
+    "quote_number": "HL-26-0932",
     "supplier_name": "Helvetia Lager AG",
     "suspected_injection": false,
     "total": {
@@ -38,7 +40,7 @@
     "vat_included": false
   },
   "usage": {
-    "input_tokens": 1839,
-    "output_tokens": 524
+    "input_tokens": 2098,
+    "output_tokens": 577
   }
 }
