@@ -174,17 +174,22 @@ def build_result(doc: Document, raw: dict | None, usage: Usage | None = None) ->
     return ExtractionResult(**base, quote=quote)
 
 
+def duplicate_result(doc: Document) -> ExtractionResult:
+    assert doc.duplicate_of is not None
+    return ExtractionResult(
+        doc_name=doc.name,
+        doc_hash=doc.doc_hash,
+        skipped=QuoteFlag.DUPLICATE,
+        duplicate_of=doc.duplicate_of,
+    )
+
+
 def extract_document(
     client: MessagesClient, doc: Document, pr: PurchaseRequest, model: str | None = None
 ) -> ExtractionResult:
     """Duplicates are skipped without an LLM call; everything else is extracted and grounded."""
     if doc.duplicate_of is not None:
-        return ExtractionResult(
-            doc_name=doc.name,
-            doc_hash=doc.doc_hash,
-            skipped=QuoteFlag.DUPLICATE,
-            duplicate_of=doc.duplicate_of,
-        )
+        return duplicate_result(doc)
     model = model or os.environ["ANTHROPIC_MODEL"]
     raw, usage, _ = call_model(client, build_request(doc, pr, model))
     return build_result(doc, raw, usage)

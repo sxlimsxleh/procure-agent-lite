@@ -1,12 +1,12 @@
 """Extraction tests. No API key needed: the Claude client is replaced by a fake."""
 
-from datetime import date
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
 import pytest
 
+from evals.recording import raw_from_golden
 from procure.extract import (
     FIELD_KINDS,
     RECORD_QUOTE_TOOL,
@@ -15,43 +15,13 @@ from procure.extract import (
     extract_document,
 )
 from procure.ingest import Document, load_inbox
-from procure.models import GoldenQuote, GoldenSet, PurchaseRequest, QuoteFlag
+from procure.models import GoldenSet, PurchaseRequest, QuoteFlag
 from procure.normalise import check_quote
 
 ROOT = Path(__file__).resolve().parent.parent
 PR = PurchaseRequest.model_validate_json((ROOT / "data/pr/PR-0001.json").read_text("utf-8"))
 LABELS = GoldenSet.model_validate_json((ROOT / "golden/labels.json").read_text("utf-8"))
 DOCS = {d.name: d for d in load_inbox(ROOT / "data/inbox")}
-
-
-def raw_from_golden(quote: GoldenQuote | None) -> dict[str, Any]:
-    """What a perfect model would send to record_quote for this document."""
-    if quote is None:
-        empty = {"value": None, "source_text": None}
-        return {
-            "is_quote": False, "supplier_name": None, "currency": None, "vat_included": None,
-            **{name: empty for name in FIELD_KINDS},
-            "suspected_injection": False, "injection_text": None,
-        }  # fmt: skip
-    raw: dict[str, Any] = {
-        "is_quote": True,
-        "supplier_name": quote.supplier_name,
-        "currency": quote.currency,
-        "vat_included": quote.vat_included,
-        # Deliberately False everywhere: proves the code-side tripwire alone catches q12.
-        "suspected_injection": False,
-        "injection_text": None,
-    }
-    for name in FIELD_KINDS:
-        field = getattr(quote, name)
-        value = field.value
-        if isinstance(value, date):
-            value = value.isoformat()
-        raw[name] = {
-            "value": None if value is None else str(value),
-            "source_text": field.source_text,
-        }
-    return raw
 
 
 class FakeClient:

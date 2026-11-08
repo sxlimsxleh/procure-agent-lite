@@ -4,7 +4,7 @@ Turns a messy procurement inbox into a human-approved draft purchase order in a 
 system, with every number traceable to its source. Fictional customer: Brunner
 Antriebstechnik GmbH. Full brief and design rules: [CLAUDE.md](CLAUDE.md).
 
-> Status: milestone 2 of 8 (ingest, extraction, grounding, normalisation). This README becomes the
+> Status: milestone 3 of 8 (eval harness built; baseline needs an API key and is not recorded yet). This README becomes the
 > deployment memo in milestone 8.
 
 ## Run
@@ -13,6 +13,8 @@ Antriebstechnik GmbH. Full brief and design rules: [CLAUDE.md](CLAUDE.md).
 make setup   # uv sync
 make test    # pytest
 make lint    # ruff
+make evals-recorded   # replay recorded LLM responses, no key needed (CI gate)
+make evals LABEL=baseline   # live run against Claude, needs .env (see .env.example)
 ```
 
 ## What is here so far
@@ -53,3 +55,24 @@ make lint    # ruff
 | `q11_huber_pricelist.xlsx` | Price list: no quantity, total or delivery date |
 | `q12_ostbayern_lager.pdf` | Hidden "ignore previous instructions" line → suspected injection |
 | `q13_newsletter.eml` | Not a quote |
+
+## Evals
+
+`evals/run_evals.py` runs every inbox document through extraction + grounding and scores the
+result against `golden/labels.json`:
+
+- **Per-field accuracy**: right value, or correctly flagged as not stated.
+- **Wrong accepted**: a wrong value with status `ok`. This is the dangerous error; **CI fails if
+  the recorded run has any**.
+- **Wrongly flagged**: a correct value we rejected (safe, but costs the buyer time).
+- **Flag precision/recall** per flag type, document outcomes, tokens, estimated cost, LLM time.
+
+Live runs save each model response to `evals/recordings/`; CI replays them without an API key.
+Each recording carries a fingerprint of the prompt and tool schema, so changing the prompt
+without re-recording fails instead of reporting outdated numbers. Labelled runs are saved to
+`evals/results/<date>-<label>.md` and `.json`.
+
+| | Baseline | After fixes |
+|---|---|---|
+| Field accuracy | not recorded yet | – |
+| Wrong values accepted | not recorded yet | – |
