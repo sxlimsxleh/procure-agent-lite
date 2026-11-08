@@ -19,3 +19,5 @@ jobs:
           uv run ruff format --check .
       - name: Tests
         run: uv run pytest -q -rs
+      - name: Evals on recorded LLM responses (gate - no wrong value accepted)
+        run: uv run python -m evals.run_evals --mode recorded
