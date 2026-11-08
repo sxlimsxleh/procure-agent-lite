@@ -1,0 +1,44 @@
+{
+  "doc_hash": "e421c90fc981420d94bbc7f663fa5fcd581911af62adbef7c9cfa188def0fae4",
+  "doc_name": "q13_newsletter.eml",
+  "duration_s": 3.75,
+  "model": "claude-opus-5-5",
+  "prompt_fingerprint": "ff67094dcf14cda9",
+  "stop_reason": "tool_use",
+  "tool_input": {
+    "currency": null,
+    "delivery_date": {
+      "source_text": null,
+      "value": null
+    },
+    "injection_text": null,
+    "is_quote": false,
+    "payment_terms_days": {
+      "source_text": null,
+      "value": null
+    },
+    "quantity": {
+      "source_text": null,
+      "value": null
+    },
+    "supplier_name": null,
+    "suspected_injection": false,
+    "total": {
+      "source_text": null,
+      "value": null
+    },
+    "unit_price": {
+      "source_text": null,
+      "value": null
+    },
+    "valid_until": {
+      "source_text": null,
+      "value": null
+    },
+    "vat_included": null
+  },
+  "usage": {
+    "input_tokens": 1844,
+    "output_tokens": 388
+  }
+}
