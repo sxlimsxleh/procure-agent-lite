@@ -7,19 +7,19 @@ from pathlib import Path
 import pytest
 
 from evals.metrics import evaluate, score_field
-from evals.recording import (
-    Recording,
-    StaleRecordingError,
-    load_recording,
-    prompt_fingerprint,
-    raw_from_golden,
-    save_recording,
-)
+from evals.recording import raw_from_golden
 from evals.run_evals import main
 from procure.costs import estimate_cost_usd
 from procure.extract import build_result
 from procure.ingest import load_inbox
 from procure.models import ExtractedField, GoldenSet, Usage
+from procure.recordings import (
+    Recording,
+    StaleRecordingError,
+    load_recording,
+    prompt_fingerprint,
+    save_recording,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 LABELS = GoldenSet.model_validate_json((ROOT / "golden/labels.json").read_text("utf-8"))
