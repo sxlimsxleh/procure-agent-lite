@@ -21,9 +21,14 @@ from pydantic import ValidationError
 
 from procure.config import CustomerConfig
 from procure.models import Decision, NormalisedQuote, PurchaseRequest, Quote, QuoteFlag
-from procure.normalise import check_quote, normalise_quote
+from procure.normalise import check_quote, mark_superseded, normalise_quote
 
-ALWAYS_EXCLUDED_FLAGS = [QuoteFlag.SUSPECTED_INJECTION, QuoteFlag.EXPIRED, QuoteFlag.TOTAL_MISMATCH]
+ALWAYS_EXCLUDED_FLAGS = [
+    QuoteFlag.SUSPECTED_INJECTION,
+    QuoteFlag.EXPIRED,
+    QuoteFlag.TOTAL_MISMATCH,
+    QuoteFlag.SUPERSEDED,
+]
 
 
 @dataclass
@@ -196,8 +201,9 @@ def decide(
     Without a client the rationale is the template, so tests and CI need no API key.
     """
     candidates = []
+    # Per quote: expiry against `today`, arithmetic. Across quotes: older revisions.
+    quotes = mark_superseded([check_quote(q, today) for q in quotes])
     for quote in quotes:
-        quote = check_quote(quote, today)  # idempotent: expiry is always judged against `today`
         normalised = (
             normalise_quote(quote, cfg.vat_rate, cfg.fx_to_eur)
             if quote.currency in cfg.fx_to_eur

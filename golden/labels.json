@@ -6,6 +6,7 @@
       "quote": {
         "supplier_name": "Müller Wälzlager GmbH",
         "currency": "EUR",
+        "quote_number": "AN-2026-1187",
         "unit_price": {
           "value": "4.46",
           "source_text": "ab 500 Stk.: 4,46 €",
@@ -47,6 +48,7 @@
       "quote": {
         "supplier_name": "AlpenTech Industriebedarf GmbH",
         "currency": "EUR",
+        "quote_number": "4471",
         "unit_price": {
           "value": "5.59",
           "source_text": "Stückpreis: 5,59 € inkl. 19 % MwSt.",
@@ -86,6 +88,7 @@
       "quote": {
         "supplier_name": "Helvetia Lager AG",
         "currency": "CHF",
+        "quote_number": "HL-26-0932",
         "unit_price": {
           "value": "4.35",
           "source_text": "Preis pro Stück: CHF 4.35",
@@ -125,6 +128,7 @@
       "quote": {
         "supplier_name": "US Bearing Co.",
         "currency": "USD",
+        "quote_number": "USB-77812",
         "unit_price": {
           "value": "5.10",
           "source_text": "Unit price: $5.10",
@@ -164,6 +168,7 @@
       "quote": {
         "supplier_name": "Baltic Bearings Sp. z o.o.",
         "currency": "EUR",
+        "quote_number": "BB/2026/554",
         "unit_price": {
           "value": "4.50",
           "source_text": "Price per piece: EUR 4.50 (net)",
@@ -202,6 +207,7 @@
       "quote": {
         "supplier_name": "Lagertechnik Franken GmbH",
         "currency": "EUR",
+        "quote_number": "LF-2026-0412",
         "unit_price": {
           "value": "4.29",
           "source_text": "Einzelpreis: 4,29 € netto",
@@ -243,6 +249,7 @@
       "quote": {
         "supplier_name": "Rhein-Kugel GmbH",
         "currency": "EUR",
+        "quote_number": "RK-5521",
         "unit_price": {
           "value": "4.70",
           "source_text": "Einzelpreis: 4,70 €",
@@ -284,6 +291,7 @@
       "quote": {
         "supplier_name": "Kugellager Schmidt KG",
         "currency": "EUR",
+        "quote_number": "2026-118",
         "unit_price": {
           "value": "4.62",
           "source_text": "Einzelpreis netto: 4,62 €",
@@ -331,6 +339,7 @@
       "quote": {
         "supplier_name": "Bohemia Bearings s.r.o.",
         "currency": "EUR",
+        "quote_number": null,
         "unit_price": {
           "value": "4.55",
           "source_text": "Unit price: EUR 4.55 (net, excl. VAT)",
@@ -370,6 +379,7 @@
       "quote": {
         "supplier_name": "Huber Industriebedarf GmbH",
         "currency": "EUR",
+        "quote_number": null,
         "unit_price": {
           "value": "4.39",
           "source_text": "6205-2RS | Rillenkugellager 6205-2RS | 10 | 4.39 | 100",
@@ -406,6 +416,7 @@
       "quote": {
         "supplier_name": "Ostbayern Lager GmbH",
         "currency": "EUR",
+        "quote_number": "OL-3390",
         "unit_price": {
           "value": "6.10",
           "source_text": "Einzelpreis: 6,10 €",
@@ -454,6 +465,7 @@
       "quote": {
         "supplier_name": "Fränkische Wälzlagerhandel GmbH",
         "currency": "EUR",
+        "quote_number": "FW-26-3307",
         "unit_price": {
           "value": "4.63",
           "source_text": "2 6205-2RS Rillenkugellager 6205-2RS 500 Stk 4,63 2.315,00",
@@ -493,6 +505,8 @@
       "quote": {
         "supplier_name": "Lager-Direkt Passau GmbH",
         "currency": "EUR",
+        "quote_number": null,
+        "price_unit": 100,
         "unit_price": {
           "value": "4.38",
           "source_text": "Preis je 100 Stück: 438,00 € netto",
@@ -532,6 +546,7 @@
       "quote": {
         "supplier_name": "Nordbayern Lagerservice GmbH",
         "currency": "EUR",
+        "quote_number": "NL-4471",
         "unit_price": {
           "status": "flagged",
           "reason": "OCR-garbled: '4,4б' could be 4.40 or 4.46"
@@ -568,6 +583,7 @@
       "quote": {
         "supplier_name": "Müller Wälzlager GmbH",
         "currency": "EUR",
+        "quote_number": "AN-2026-1187 Rev. 2",
         "unit_price": {
           "value": "4.41",
           "source_text": "Einzelpreis: 4,41 € / Stück",

@@ -19,7 +19,9 @@ FieldKind = Literal["decimal", "int", "date"]
 
 # --- Numbers --------------------------------------------------------------------------------
 
-_NUMBER_TOKEN = re.compile(r"\d+(?:[.,']\d+)*")
+# A number must not touch a letter or another digit on either side. OCR noise such as "4,4б"
+# (б may be a garbled 6) or "5OO" is then not read as 4.4 / 5, so it cannot ground a guess.
+_NUMBER_TOKEN = re.compile(r"(?<![^\W_])\d+(?:[.,']\d+)*(?![^\W_])")
 
 # (thousands separator, decimal separator)
 _NUMBER_STYLES = [

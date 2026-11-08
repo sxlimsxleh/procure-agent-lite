@@ -16,12 +16,12 @@ from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
-from evals.metrics import EvalReport, FieldScore, evaluate
+from evals.metrics import EXTRA_FIELDS, EvalReport, FieldScore, evaluate
 from procure.costs import estimate_cost_usd
 from procure.extract import build_request, build_result, call_model, duplicate_result
 from procure.ingest import Document, load_inbox
 from procure.models import ExtractionResult, GoldenSet, PurchaseRequest, Usage
-from procure.normalise import check_quote
+from procure.normalise import check_quote, mark_superseded
 from procure.recordings import (
     Recording,
     StaleRecordingError,
@@ -124,12 +124,13 @@ def run_recorded(
 def apply_checks(
     results: dict[str, ExtractionResult], labels: GoldenSet
 ) -> dict[str, ExtractionResult]:
-    """Expiry and total checks, with `today` fixed by the labels so results are reproducible."""
-    out = {}
-    for name, r in results.items():
-        if r.quote is not None:
-            r = r.model_copy(update={"quote": check_quote(r.quote, labels.today)})
-        out[name] = r
+    """Same checks as decide(): expiry and totals per quote (with `today` fixed by the labels so
+    results are reproducible), then older revisions across quotes."""
+    names = [n for n, r in results.items() if r.quote is not None]
+    checked = mark_superseded([check_quote(results[n].quote, labels.today) for n in names])  # type: ignore[arg-type]
+    out = dict(results)
+    for name, quote in zip(names, checked, strict=True):
+        out[name] = results[name].model_copy(update={"quote": quote})
     return out
 
 
@@ -163,8 +164,9 @@ def to_markdown(report: EvalReport, meta: RunMeta, label: str, mode: str) -> str
         "",
         "| Field | Correct | Accuracy | Wrong accepted | Wrongly flagged |",
         "|---|---|---|---|---|",
-        *(_field_row(name, s) for name, s in report.fields.items()),
+        *(_field_row(name, s) for name, s in report.fields.items() if name not in EXTRA_FIELDS),
         _field_row("**All fields**", report.overall),
+        *(_field_row(f"{name} (not in total)", report.fields[name]) for name in EXTRA_FIELDS),
         "",
         "## Flags",
         "",

@@ -129,7 +129,7 @@ def test_no_recommendation_cannot_be_approved(tmp_path: Path) -> None:
     inbox.mkdir()
     for name in ["q01_mueller_waelzlager.pdf", "q08_fwd.eml", "q06_lagertechnik_franken.pdf"]:
         (inbox / name).write_bytes((DEFAULT_PATHS.inbox / name).read_bytes())
-    paths = type(DEFAULT_PATHS)(inbox=inbox)
+    paths = type(DEFAULT_PATHS)(inbox=inbox, recordings=ORIGINAL_PATHS.recordings)
     audit, erp = setup()
     proposal = propose("PR-0001", audit, today=TODAY, paths=paths)
     assert proposal.draft_po is None

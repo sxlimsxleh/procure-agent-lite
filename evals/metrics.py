@@ -6,6 +6,7 @@ Field outcomes (per document, per field):
   wrongly_flagged  label has a value but we flagged it (safe, costs the buyer time)
 """
 
+import re
 from dataclasses import dataclass, field
 from decimal import Decimal
 from typing import Any, Literal
@@ -16,6 +17,10 @@ from procure.models import ExtractionResult, GoldenDoc, GoldenSet, Quote, QuoteF
 
 PLAIN_FIELDS = ["supplier_name", "currency", "vat_included"]
 ALL_FIELDS = PLAIN_FIELDS + list(FIELD_KINDS)
+# Scored and shown, but not part of "All fields" (and so not of the gate): it does not carry
+# money itself and only matters through the `superseded` flag, which is scored separately.
+# Keeping it out also keeps "All fields" comparable with the baselines before milestone 3b.
+EXTRA_FIELDS = ["quote_number"]
 
 Outcome = Literal["correct", "wrong_accepted", "wrongly_flagged"]
 
@@ -74,7 +79,9 @@ class EvalReport:
     @property
     def overall(self) -> FieldScore:
         total = FieldScore()
-        for s in self.fields.values():
+        for name, s in self.fields.items():
+            if name in EXTRA_FIELDS:
+                continue
             total.correct += s.correct
             total.wrong_accepted += s.wrong_accepted
             total.wrongly_flagged += s.wrongly_flagged
@@ -84,6 +91,12 @@ class EvalReport:
 def _same_plain(name: str, got: Any, want: Any) -> bool:
     if name == "supplier_name" and got is not None and want is not None:
         return collapse_ws(got).casefold() == collapse_ws(want).casefold()
+    if name == "quote_number" and got is not None and want is not None:
+        # "#USB-77812" / "Nr. USB-77812" / "USB-77812" are the same number
+        def bare(n: str) -> str:
+            return re.sub(r"^(#|nr\.?|no\.?)\s*", "", collapse_ws(n).casefold())
+
+        return bare(got) == bare(want)
     return got == want
 
 
@@ -98,7 +111,7 @@ def score_field(
 ) -> tuple[Outcome, Failure | None]:
     """Score one field of one document. got_quote None = we produced no quote for this doc."""
     want_quote = want.quote
-    if name in PLAIN_FIELDS:
+    if name in PLAIN_FIELDS or name in EXTRA_FIELDS:
         got_v = getattr(got_quote, name) if got_quote else None
         want_v = getattr(want_quote, name) if want_quote else None
         if got_quote is None:
@@ -146,7 +159,7 @@ def _doc_kind(flags: list[QuoteFlag], has_quote: bool, error: str | None) -> str
 def evaluate(results: dict[str, ExtractionResult], labels: GoldenSet) -> EvalReport:
     """Score `results` (keyed by doc name) against the labels. Missing results count as errors."""
     report = EvalReport(
-        fields={name: FieldScore() for name in ALL_FIELDS},
+        fields={name: FieldScore() for name in ALL_FIELDS + EXTRA_FIELDS},
         flags={flag.value: FlagScore() for flag in QuoteFlag},
     )
     field_flags = FlagScore()  # field-level: status "flagged" as the positive class
@@ -170,7 +183,7 @@ def evaluate(results: dict[str, ExtractionResult], labels: GoldenSet) -> EvalRep
 
         # Fields: scored for every doc that should be, or wrongly became, a quote
         if want.quote is not None or got_quote is not None:
-            for name in ALL_FIELDS:
+            for name in ALL_FIELDS + EXTRA_FIELDS:
                 outcome, failure = score_field(name, got_quote, want)
                 report.fields[name].add(outcome)
                 if failure:

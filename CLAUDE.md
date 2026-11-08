@@ -55,7 +55,7 @@ DEPLOYMENT_NOTES.md    # discovery questions, assumptions, what should become pr
 ## Data contracts
 
 - `ExtractedField[T]`: `value: T | None`, `source_text: str | None`, `status: "ok" | "flagged"`, `reason: str | None`
-- `Quote`: `quote_id`, `doc_hash`, `supplier_name`, `currency`, `unit_price`, `quantity`, `total`, `vat_included: bool | None`, `delivery_date`, `valid_until`, `payment_terms_days`, `flags: list[str]` — numeric/date fields are `ExtractedField`s
+- `Quote`: `quote_id`, `doc_hash`, `supplier_name`, `currency`, `quote_number: str | None`, `unit_price` (always per piece; a price per N pieces is divided in code, with the stated price kept in `reason`), `quantity`, `total`, `vat_included: bool | None`, `delivery_date`, `valid_until`, `payment_terms_days`, `flags: list[str]` — numeric/date fields are `ExtractedField`s
 - `Decision`: `recommended_quote_id | None`, `scores: dict[quote_id, float]`, `policy_violations: list[str]`, `needs_approval: bool`, `rationale: str` (must reference quote ids that exist)
 - `DraftPO`: SAP-ish fields: `PurchaseOrderType="NB"`, `CompanyCode`, `Supplier`, `DocumentCurrency`, items with `Material`, `OrderQuantity`, `NetPriceAmount`
 

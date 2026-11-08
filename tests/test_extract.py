@@ -1,5 +1,6 @@
 """Extraction tests. No API key needed: the Claude client is replaced by a fake."""
 
+from decimal import Decimal
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -16,7 +17,7 @@ from procure.extract import (
 )
 from procure.ingest import Document, load_inbox
 from procure.models import GoldenSet, PurchaseRequest, QuoteFlag
-from procure.normalise import check_quote
+from procure.normalise import check_quote, mark_superseded
 
 ROOT = Path(__file__).resolve().parent.parent
 PR = PurchaseRequest.model_validate_json((ROOT / "data/pr/PR-0001.json").read_text("utf-8"))
@@ -129,22 +130,7 @@ def test_llm_reported_injection_is_flagged_even_without_tripwire_match() -> None
 # --- golden replay: perfect model output through the real code ---
 
 
-# Known gaps found by the milestone 3b documents. strict=True: once fixed, these must be removed.
-KNOWN_GAPS = {
-    "q01_mueller_waelzlager.pdf": "superseded revisions are not detected yet",
-    "q15_lager_direkt_per100.eml": "the schema has no price unit (price per 100 pieces)",
-}
-
-
-@pytest.mark.parametrize(
-    "name",
-    [
-        pytest.param(n, marks=pytest.mark.xfail(strict=True, reason=KNOWN_GAPS[n]))
-        if n in KNOWN_GAPS
-        else n
-        for n in sorted(LABELS.docs)
-    ],
-)
+@pytest.mark.parametrize("name", sorted(LABELS.docs))
 def test_golden_replay(name: str) -> None:
     """If the LLM answered exactly like the labels, would the code reproduce every label?
 
@@ -159,6 +145,14 @@ def test_golden_replay(name: str) -> None:
         result = build_result(doc, raw_from_golden(golden.quote))
     if result.quote is not None:
         result = result.model_copy(update={"quote": check_quote(result.quote, LABELS.today)})
+    if golden.flags == [QuoteFlag.SUPERSEDED] and result.quote is not None:
+        # Superseding is decided across documents; replay this doc together with its revision.
+        newer = DOCS["q17_mueller_rev2.eml"]
+        newer_quote = build_result(newer, raw_from_golden(LABELS.docs[newer.name].quote)).quote
+        assert newer_quote is not None
+        result = result.model_copy(
+            update={"quote": mark_superseded([result.quote, newer_quote])[0]}
+        )
 
     assert sorted(result.flags) == sorted(golden.flags)
     assert result.duplicate_of == golden.duplicate_of
@@ -169,3 +163,42 @@ def test_golden_replay(name: str) -> None:
         got, want = getattr(result.quote, field), getattr(golden.quote, field)
         assert (got.status, got.value) == (want.status, want.value), field
     assert result.quote.quote_id == doc.quote_id
+
+
+# --- milestone 3b: price per N pieces, quote number ---
+
+
+def test_price_per_100_pieces_becomes_per_piece_price() -> None:
+    doc = DOCS["q15_lager_direkt_per100.eml"]
+    raw = raw_from_golden(LABELS.docs[doc.name].quote)
+    assert raw["unit_price"]["value"] == "438.00" and raw["price_unit"] == 100
+    quote = build_result(doc, raw).quote
+    assert quote is not None
+    assert quote.unit_price.status == "ok" and quote.unit_price.value == Decimal("4.38")
+    assert quote.unit_price.reason == "438.00 per 100 pieces"
+    assert quote.unit_price.source_text == "Preis je 100 Stück: 438,00 € netto"
+
+
+def test_price_unit_must_be_in_the_price_span() -> None:
+    doc = DOCS["q15_lager_direkt_per100.eml"]
+    raw = raw_from_golden(LABELS.docs[doc.name].quote) | {"price_unit": 1000}
+    quote = build_result(doc, raw).quote
+    assert quote is not None and quote.unit_price.status == "flagged"
+
+
+def test_per_100_price_without_price_unit_is_caught_by_total_check() -> None:
+    """Baseline-v2 failure: the model reported 438.00 per piece. Still grounded (the span says
+    438,00), but 500 x 438 != 2,190, so the quote is flagged and decide() excludes it."""
+    doc = DOCS["q15_lager_direkt_per100.eml"]
+    raw = raw_from_golden(LABELS.docs[doc.name].quote) | {"price_unit": None}
+    quote = build_result(doc, raw).quote
+    assert quote is not None and quote.unit_price.value == Decimal("438.00")
+    assert QuoteFlag.TOTAL_MISMATCH in check_quote(quote, LABELS.today).flags
+
+
+def test_quote_number_kept_only_if_in_document() -> None:
+    doc = DOCS["q17_mueller_rev2.eml"]
+    raw = raw_from_golden(LABELS.docs[doc.name].quote)
+    assert build_result(doc, raw).quote.quote_number == "AN-2026-1187 Rev. 2"  # type: ignore[union-attr]
+    raw["quote_number"] = "AN-2026-1187 Rev. 3"  # not in the document
+    assert build_result(doc, raw).quote.quote_number is None  # type: ignore[union-attr]
