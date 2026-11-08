@@ -20,10 +20,10 @@ def raw_from_golden(quote: GoldenQuote | None) -> dict[str, Any]:
         "supplier_name": quote.supplier_name if quote else None,
         "currency": quote.currency if quote else None,
         "vat_included": quote.vat_included if quote else None,
-        "price_unit": quote.price_unit if quote else None,
-        "quote_number": quote.quote_number if quote else None,
+        "price_unit": (quote.price_unit or 1) if quote else 1,
+        "quote_number": (quote.quote_number or "") if quote else "",
         "suspected_injection": False,
-        "injection_text": None,
+        "injection_text": "",
     }
     for name in FIELD_KINDS:
         field = getattr(quote, name) if quote else None

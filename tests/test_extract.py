@@ -10,6 +10,7 @@ import pytest
 from evals.recording import raw_from_golden
 from procure.extract import (
     FIELD_KINDS,
+    MAX_NULLABLE_FIELDS,
     RECORD_QUOTE_TOOL,
     build_request,
     build_result,
@@ -57,6 +58,18 @@ def test_request_exposes_exactly_one_strict_recording_tool() -> None:
     assert RECORD_QUOTE_TOOL["input_schema"]["additionalProperties"] is False
     assert req["tool_choice"] == {"type": "auto"}  # forced tool use is rejected by current models
     assert "temperature" not in req  # rejected by current models
+
+
+def test_schema_stays_within_api_nullable_limit() -> None:
+    """The API rejects strict schemas with more than 16 union-typed parameters (found the hard
+    way in the 3b `after` run). Count them the way the API does: nested ones included."""
+
+    def unions(schema: dict) -> int:
+        own = isinstance(schema.get("type"), list) or "anyOf" in schema
+        children = schema.get("properties", {}).values()
+        return int(own) + sum(unions(child) for child in children)
+
+    assert unions(RECORD_QUOTE_TOOL["input_schema"]) <= MAX_NULLABLE_FIELDS
 
 
 def test_request_wraps_document_as_data() -> None:
@@ -190,7 +203,7 @@ def test_per_100_price_without_price_unit_is_caught_by_total_check() -> None:
     """Baseline-v2 failure: the model reported 438.00 per piece. Still grounded (the span says
     438,00), but 500 x 438 != 2,190, so the quote is flagged and decide() excludes it."""
     doc = DOCS["q15_lager_direkt_per100.eml"]
-    raw = raw_from_golden(LABELS.docs[doc.name].quote) | {"price_unit": None}
+    raw = raw_from_golden(LABELS.docs[doc.name].quote) | {"price_unit": 1}
     quote = build_result(doc, raw).quote
     assert quote is not None and quote.unit_price.value == Decimal("438.00")
     assert QuoteFlag.TOTAL_MISMATCH in check_quote(quote, LABELS.today).flags
