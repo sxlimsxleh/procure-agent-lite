@@ -4,7 +4,7 @@ Turns a messy procurement inbox into a human-approved draft purchase order in a 
 system, with every number traceable to its source. Fictional customer: Brunner
 Antriebstechnik GmbH. Full brief and design rules: [CLAUDE.md](CLAUDE.md).
 
-> Status: milestone 5 of 8 (mock SAP, idempotent writes, audit log). This README becomes the
+> Status: milestone 6 of 8 (end-to-end pipeline, approval UI, `make demo`). This README becomes the
 > deployment memo in milestone 8.
 
 ## Run
@@ -16,6 +16,8 @@ make lint    # ruff
 make evals-recorded   # replay recorded LLM responses, no key needed (CI gate)
 make evals LABEL=baseline   # live run against Claude, needs .env (see .env.example)
 make erp     # mock SAP purchase order API on :8001 (FLAKY_RATE=0.3 by default)
+make demo    # inbox -> decision -> approval prompt -> PO in the mock SAP (no API key needed)
+make ui      # same flow in the Streamlit approval queue on :8501
 ```
 
 ## What is here so far
@@ -35,6 +37,9 @@ make erp     # mock SAP purchase order API on :8001 (FLAKY_RATE=0.3 by default)
 | `mock_erp/app.py` | Mock S/4HANA purchase order OData endpoint; flaky on purpose (503, 429 + Retry-After, lost responses) |
 | `src/procure/erp_client.py` | Draft PO in SAP terms; httpx + tenacity retries; idempotency key |
 | `src/procure/audit.py` | Append-only SQLite audit log (enforced by triggers) |
+| `src/procure/pipeline.py` | `propose` (inbox → draft PO) and `approve` / `retry_po`; CLI; approval queue derived from the audit log |
+| `src/procure/logging.py` | One JSON log line per step: run_id, duration_ms, tokens, est. cost |
+| `ui/approve.py` | Streamlit approval queue: recommendation, every quote with its source text, draft PO, audit trail |
 
 ### How a value gets accepted
 
@@ -90,6 +95,18 @@ The client retries 429/502/503/504 and transport errors up to 5 times, honouring
 otherwise exponential backoff with jitter. Tested: at `FLAKY_RATE=0.5` with lost responses, 5
 submissions of one PO leave exactly 1 PO (checked across 300 random seeds: 0 duplicates). A
 control test with a fresh random key per attempt creates duplicates.
+
+## Approval flow
+
+`propose` writes a proposal event (quotes with source spans, scores, exclusions, rationale,
+draft PO, idempotency key) to the audit log. The approval queue is *derived from the audit log*:
+a run stays open until it has a `po_created` or a rejection event, so the queue and the audit
+trail cannot disagree. The buyer approves every PO; above €25k net two different people must
+approve before anything is sent to SAP. If SAP never confirms, the run stays in the queue with a
+"retry" action, which is safe because the idempotency key is unchanged.
+
+Without a local setup: open the repo in a GitHub Codespace, then `make setup` and `make ui`;
+Codespaces forwards port 8501 to the browser.
 
 ## Evals
 

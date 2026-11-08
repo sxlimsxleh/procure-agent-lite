@@ -17,18 +17,18 @@ from decimal import Decimal
 from pathlib import Path
 
 from evals.metrics import EvalReport, FieldScore, evaluate
-from evals.recording import (
+from procure.costs import estimate_cost_usd
+from procure.extract import build_request, build_result, call_model, duplicate_result
+from procure.ingest import Document, load_inbox
+from procure.models import ExtractionResult, GoldenSet, PurchaseRequest, Usage
+from procure.normalise import check_quote
+from procure.recordings import (
     Recording,
     StaleRecordingError,
     load_recording,
     prompt_fingerprint,
     save_recording,
 )
-from procure.costs import estimate_cost_usd
-from procure.extract import build_request, build_result, call_model, duplicate_result
-from procure.ingest import Document, load_inbox
-from procure.models import ExtractionResult, GoldenSet, PurchaseRequest, Usage
-from procure.normalise import check_quote
 
 ROOT = Path(__file__).resolve().parent.parent
 INBOX = ROOT / "data" / "inbox"
