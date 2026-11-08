@@ -4,7 +4,7 @@ Turns a messy procurement inbox into a human-approved draft purchase order in a 
 system, with every number traceable to its source. Fictional customer: Brunner
 Antriebstechnik GmbH. Full brief and design rules: [CLAUDE.md](CLAUDE.md).
 
-> Status: milestone 3 of 8 (eval harness built; baseline needs an API key and is not recorded yet). This README becomes the
+> Status: milestone 4 of 8 (policy + scoring). Eval baseline not recorded yet. This README becomes the
 > deployment memo in milestone 8.
 
 ## Run
@@ -29,6 +29,8 @@ make evals LABEL=baseline   # live run against Claude, needs .env (see .env.exam
 | `src/procure/extract.py` | One Claude call per document with a single data-only tool, `record_quote` (strict schema) |
 | `src/procure/ground.py` | Accepts a value only if its source span is in the document and contains it; injection tripwire |
 | `src/procure/normalise.py` | Gross → net, FX → EUR, expiry vs. injected `today`, total ≠ qty × unit price |
+| `config/brunner.yaml` | Customer policy: VAT, fixed FX table, approval threshold, min. 3 valid quotes, blocked suppliers, scoring weights |
+| `src/procure/decide.py` | Policy exclusions, deterministic scoring, LLM rationale with template fallback |
 
 ### How a value gets accepted
 
@@ -55,6 +57,22 @@ make evals LABEL=baseline   # live run against Claude, needs .env (see .env.exam
 | `q11_huber_pricelist.xlsx` | Price list: no quantity, total or delivery date |
 | `q12_ostbayern_lager.pdf` | Hidden "ignore previous instructions" line → suspected injection |
 | `q13_newsletter.eml` | Not a quote |
+
+## How the supplier is chosen (code, not the LLM)
+
+1. **Exclude** a quote if it is flagged expired, total mismatch or suspected injection; a required
+   field is not grounded; the supplier is blocked; delivery is after the need-by date; the quoted
+   quantity is too small; or there is no FX rate. Every reason is recorded.
+2. **Fewer than 3 valid quotes** → no recommendation; the buyer handles the PR.
+3. **Score** = 0.60 × price (cheapest / own, net EUR) + 0.25 × days early (cap 14) + 0.15 ×
+   payment days (cap 60). Ties: lower price, then quote id.
+4. **Approval**: the buyer approves every draft PO. Above €25k net a second approver is needed.
+5. **Rationale**: Claude explains the decision from structured facts only (never document text).
+   If its text cites an unknown quote id or omits the winner, a template is used instead.
+
+On PR-0001 with perfect extraction: 4 valid quotes, **Müller Wälzlager wins at €2,230 net**
+(score 0.87). Reading the page-1 list price instead of the page-2 discount would not change the
+winner, but the PO would be €195 too high.
 
 ## Evals
 

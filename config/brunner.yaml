@@ -1,0 +1,36 @@
+# Per-customer behaviour for Brunner Antriebstechnik GmbH (design rule 5: config, not code).
+# Loaded and validated by src/procure/config.py; an unknown key or a wrong type fails at startup.
+
+customer: Brunner Antriebstechnik GmbH
+
+vat_rate: 0.19  # German standard rate, used to turn gross prices into net
+
+# Fixed FX table (design rule 7: deterministic). EUR per 1 unit of the currency.
+fx_as_of: 2026-11-02
+fx_to_eur:
+  EUR: 1
+  CHF: 1.05
+  USD: 0.92
+
+policy:
+  # Above this net order value a second approver (head of purchasing) must sign off.
+  # The buyer approves every draft PO regardless (design rule 1).
+  approval_threshold_eur: 25000
+
+  # Fewer valid quotes than this -> no recommendation, the buyer handles the PR manually.
+  min_valid_quotes: 3
+
+  # A quote is only valid if these fields were extracted AND grounded (status ok).
+  required_fields: [unit_price, total, delivery_date, valid_until]
+
+  blocked_suppliers:
+    - name: Bohemia Bearings s.r.o.
+      reason: failed supplier audit 06/2026
+
+  # Score = weighted sum of three sub-scores in [0, 1]. Weights must add up to 1.
+  weights:
+    price: 0.60          # cheapest valid quote = 1.0, others = cheapest / own price
+    delivery: 0.25       # days delivered before the need-by date, capped below
+    payment_terms: 0.15  # longer payment terms are better for cash flow, capped below
+  delivery_full_score_days: 14  # 14+ days early -> delivery sub-score 1.0
+  payment_full_score_days: 60   # 60+ days net -> payment sub-score 1.0

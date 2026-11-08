@@ -14,7 +14,7 @@ import os
 from typing import Any, Protocol
 
 from procure.ground import FieldKind, find_injection, ground_field
-from procure.ingest import Document
+from procure.ingest import Document, collapse_ws
 from procure.models import ExtractionResult, PurchaseRequest, Quote, QuoteFlag, Usage
 
 TOOL_NAME = "record_quote"
@@ -150,6 +150,9 @@ def build_result(doc: Document, raw: dict | None, usage: Usage | None = None) ->
         return ExtractionResult(**base, skipped=QuoteFlag.NOT_A_QUOTE)
     if not raw["supplier_name"] or not raw["currency"]:
         return ExtractionResult(**base, error="supplier_name or currency missing")
+    # The supplier is who gets paid: its name must appear in the document (case-insensitive).
+    if collapse_ws(raw["supplier_name"]).casefold() not in collapse_ws(doc.text).casefold():
+        return ExtractionResult(**base, error="supplier_name not found in document")
 
     fields = {
         name: ground_field(
