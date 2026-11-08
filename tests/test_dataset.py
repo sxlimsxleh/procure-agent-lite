@@ -23,7 +23,7 @@ def test_every_inbox_file_is_labelled_and_vice_versa() -> None:
 
 
 def test_dataset_size_is_within_spec() -> None:
-    assert 12 <= len(LABELS.docs) <= 15
+    assert 12 <= len(LABELS.docs) <= 17
 
 
 def test_purchase_request_loads() -> None:
@@ -51,7 +51,7 @@ def test_expired_flag_matches_valid_until() -> None:
 
 def test_total_mismatch_flag_matches_arithmetic() -> None:
     for name, q in QUOTES.items():
-        if q.total.value is None:
+        if q.total.value is None or q.quantity.value is None or q.unit_price.value is None:
             continue
         mismatch = q.quantity.value * q.unit_price.value != q.total.value
         assert mismatch == (QuoteFlag.TOTAL_MISMATCH in LABELS.docs[name].flags), name

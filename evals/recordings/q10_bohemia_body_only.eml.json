@@ -1,7 +1,7 @@
 {
   "doc_hash": "681d4322ad32f762cb19c1ee3e0bd72e278230cfdcee15d6ba738ac2e2aa60c7",
   "doc_name": "q10_bohemia_body_only.eml",
-  "duration_s": 4.52,
+  "duration_s": 4.4,
   "model": "claude-opus-5-5",
   "prompt_fingerprint": "ff67094dcf14cda9",
   "stop_reason": "tool_use",

@@ -1,7 +1,7 @@
 {
   "doc_hash": "47c31818ae89ff292bff0f6bcdb5fece7c448effc436a2936c4253ab2f8560ee",
   "doc_name": "q06_lagertechnik_franken.pdf",
-  "duration_s": 4.52,
+  "duration_s": 4.39,
   "model": "claude-opus-5-5",
   "prompt_fingerprint": "ff67094dcf14cda9",
   "stop_reason": "tool_use",

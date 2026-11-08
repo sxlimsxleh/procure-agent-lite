@@ -132,3 +132,10 @@ def test_find_injection(text: str) -> None:
 )
 def test_no_injection_in_normal_text(text: str) -> None:
     assert find_injection(text) is None
+
+
+@pytest.mark.xfail(strict=True, reason="3b: a number glued to letters (OCR noise) is still read")
+def test_ocr_number_glued_to_letters_is_not_grounded() -> None:
+    """'4,4б': the б may be a garbled 6. Reading it as 4.4 would accept a guess as fact."""
+    text = "Einzelpreis: 4,4б € zzgl. MwSt."
+    assert ground_field("4.40", text, text, "decimal").status == "flagged"

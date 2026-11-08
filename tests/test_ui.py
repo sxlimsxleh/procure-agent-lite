@@ -4,6 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
+from original_inbox import ORIGINAL_PATHS
 from streamlit.testing.v1 import AppTest
 
 from mock_erp.app import create_app
@@ -17,6 +18,7 @@ def app_with_services() -> tuple[AppTest, SimpleNamespace]:
     svc = SimpleNamespace(
         audit=AuditLog(),
         erp=ErpClient(TestClient(create_app(flaky_rate=0.0)), sleep=lambda _: None),
+        paths=ORIGINAL_PATHS,
     )
     at = AppTest.from_file(UI, default_timeout=30)
     at.session_state["services"] = svc
