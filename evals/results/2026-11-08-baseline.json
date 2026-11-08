@@ -1,0 +1,123 @@
+{
+  "label": "baseline",
+  "mode": "live",
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "prompt_fingerprint": "ff67094dcf14cda9",
+  "usage": {
+    "input_tokens": 22805,
+    "output_tokens": 6351
+  },
+  "cost_usd": "0.218240",
+  "duration_s": 65.74,
+  "fields": {
+    "supplier_name": {
+      "correct": 11,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    },
+    "currency": {
+      "correct": 11,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    },
+    "vat_included": {
+      "correct": 11,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    },
+    "unit_price": {
+      "correct": 11,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    },
+    "quantity": {
+      "correct": 11,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    },
+    "total": {
+      "correct": 11,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    },
+    "delivery_date": {
+      "correct": 11,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    },
+    "valid_until": {
+      "correct": 11,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    },
+    "payment_terms_days": {
+      "correct": 11,
+      "wrong_accepted": 0,
+      "wrongly_flagged": 0,
+      "accuracy": 1.0
+    }
+  },
+  "overall": {
+    "correct": 99,
+    "wrong_accepted": 0,
+    "wrongly_flagged": 0,
+    "accuracy": 1.0
+  },
+  "flags": {
+    "expired": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "total_mismatch": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "duplicate": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "suspected_injection": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "not_a_quote": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "field flagged (any field)": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0
+    }
+  },
+  "docs_correct": 13,
+  "docs_total": 13,
+  "failures": []
+}
