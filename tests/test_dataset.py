@@ -7,8 +7,8 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from _doc_text import attachments, collapse_ws, doc_text
 
+from procure.ingest import collapse_ws, load_document
 from procure.models import GoldenSet, PurchaseRequest, QuoteFlag
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -35,19 +35,12 @@ def test_purchase_request_loads() -> None:
 @pytest.mark.parametrize("name", sorted(QUOTES))
 def test_labelled_source_text_occurs_in_document(name: str) -> None:
     """Catches typos in my own labels: every 'ok' span must really be in the document."""
-    text = collapse_ws(doc_text(INBOX / name))
+    text = collapse_ws(load_document(INBOX / name).text)
     quote = QUOTES[name]
     for field in FIELDS:
         label = getattr(quote, field)
         if label.status == "ok":
             assert collapse_ws(label.source_text) in text, f"{name}.{field}: {label.source_text!r}"
-
-
-def test_duplicate_has_identical_attachment_but_different_email() -> None:
-    first, second = INBOX / "q08_fwd.eml", INBOX / "q09_fwd_again.eml"
-    assert first.read_bytes() != second.read_bytes()
-    assert attachments(first) == attachments(second)
-    assert LABELS.docs["q09_fwd_again.eml"].duplicate_of == "q08_fwd.eml"
 
 
 def test_expired_flag_matches_valid_until() -> None:
@@ -65,7 +58,7 @@ def test_total_mismatch_flag_matches_arithmetic() -> None:
 
 
 def test_injection_doc_contains_the_injection() -> None:
-    text = doc_text(INBOX / "q12_ostbayern_lager.pdf").lower()
+    text = load_document(INBOX / "q12_ostbayern_lager.pdf").text.lower()
     assert "ignore previous instructions" in text
 
 

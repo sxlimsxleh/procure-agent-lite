@@ -136,6 +136,47 @@ class DraftPO(StrictModel):
     items: list[DraftPOItem] = Field(min_length=1)
 
 
+class Usage(StrictModel):
+    """Token counts of one LLM call, for cost logging."""
+
+    input_tokens: int = 0
+    output_tokens: int = 0
+
+
+class ExtractionResult(StrictModel):
+    """Outcome of processing one inbox document. Exactly one of quote / skipped / error is set."""
+
+    doc_name: str
+    doc_hash: str
+    quote: Quote | None = None
+    skipped: Literal[QuoteFlag.DUPLICATE, QuoteFlag.NOT_A_QUOTE] | None = None
+    duplicate_of: str | None = None
+    error: str | None = None  # e.g. the model did not call record_quote
+    usage: Usage = Field(default_factory=Usage)
+
+    @model_validator(mode="after")
+    def _exactly_one_outcome(self) -> Self:
+        outcomes = [self.quote is not None, self.skipped is not None, self.error is not None]
+        if sum(outcomes) != 1:
+            raise ValueError("exactly one of quote, skipped, error must be set")
+        return self
+
+    @property
+    def flags(self) -> list[QuoteFlag]:
+        """Document-level flags, comparable with GoldenDoc.flags."""
+        if self.quote is not None:
+            return list(self.quote.flags)
+        return [self.skipped] if self.skipped is not None else []
+
+
+class NormalisedQuote(StrictModel):
+    """A quote with prices made comparable: net of VAT and in EUR. None = cannot be computed."""
+
+    quote: Quote
+    unit_price_net_eur: Decimal | None
+    total_net_eur: Decimal | None
+
+
 # --- Golden labels (golden/labels.json) ---------------------------------------------------------
 # Hand-labelled truth for evals. Labels reuse ExtractedField, so a label that breaks the
 # "grounded or flagged" invariant fails to load.
