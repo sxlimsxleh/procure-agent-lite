@@ -21,3 +21,28 @@ jobs:
         run: uv run pytest -q -rs
       - name: Evals on recorded LLM responses (gate - no wrong value accepted)
         run: uv run python -m evals.run_evals --mode recorded
+
+  docker:
+    # Proves `docker compose up` works on a clean machine: build, start, run the demo inside.
+    runs-on: ubuntu-latest
+    env:
+      FLAKY_SEED: "1"  # the mock ERP still fails 30% of requests, but the same ones every run
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker compose build
+      - name: Start mock ERP and approval UI (waits for health checks)
+        run: docker compose up -d --wait erp ui
+      - name: End-to-end demo inside the containers
+        run: |
+          docker compose run --rm -T demo python -m procure.pipeline demo PR-0001 --yes | tee demo.txt
+          grep -q "created in SAP" demo.txt
+      - name: Approval UI answers
+        run: curl -fsS http://localhost:8501/_stcore/health
+      - name: Container logs (on failure)
+        if: failure()
+        run: docker compose logs
+      - name: Stop
+        if: always()
+        run: docker compose down -v
+
