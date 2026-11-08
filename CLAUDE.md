@@ -82,6 +82,7 @@ make test      # pytest
 make evals     # live evals (needs key); make evals-recorded for CI
 make erp       # start mock ERP on :8001
 make demo      # end-to-end on PR-0001
+make up        # docker compose up --build (mock ERP + approval UI)
 ```
 
 ## Working agreement

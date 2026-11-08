@@ -1,0 +1,61 @@
+# docker compose up --build   -> mock SAP on :8001, approval UI on http://localhost:8501
+# docker compose run --rm demo -> the same flow on the command line
+#
+# No API key needed: extraction is replayed from evals/recordings. To extract live, put
+# ANTHROPIC_API_KEY in .env (never committed) and run the demo with --source live.
+
+x-app: &app
+  build: .
+  image: procure-agent-lite:local
+  env_file:
+    - path: .env
+      required: false
+  environment: &app-env
+    ERP_URL: http://erp:8001
+    AUDIT_DB: /app/var/audit.db
+    ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-5-5}
+    # Pinned so the demo gives the same result whenever it runs. Müller's Rev. 2 quote is valid
+    # until 2026-12-04; with the real date, a different supplier wins after that. Remove this
+    # line to judge validity against today.
+    PROCURE_TODAY: "2026-11-08"
+
+services:
+  erp:
+    <<: *app
+    command: ["uvicorn", "mock_erp.app:app", "--host", "0.0.0.0", "--port", "8001"]
+    environment:
+      FLAKY_RATE: ${FLAKY_RATE:-0.3}
+      FLAKY_SEED: ${FLAKY_SEED:-}
+    ports: ["8001:8001"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  ui:
+    <<: *app
+    command: ["streamlit", "run", "ui/approve.py", "--server.address=0.0.0.0",
+              "--server.port=8501", "--server.headless=true"]
+    ports: ["8501:8501"]
+    volumes: ["audit:/app/var"]
+    depends_on:
+      erp: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health')"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  demo:
+    <<: *app
+    profiles: ["cli"]  # not started by `up`; run it with `docker compose run --rm demo`
+    command: ["python", "-m", "procure.pipeline", "demo", "PR-0001"]
+    stdin_open: true
+    tty: true
+    volumes: ["audit:/app/var"]
+    depends_on:
+      erp: {condition: service_healthy}
+
+volumes:
+  audit:

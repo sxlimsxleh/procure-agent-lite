@@ -4,10 +4,28 @@ Turns a messy procurement inbox into a human-approved draft purchase order in a 
 system, with every number traceable to its source. Fictional customer: Brunner
 Antriebstechnik GmbH. Full brief and design rules: [CLAUDE.md](CLAUDE.md).
 
-> Status: milestone 6 of 8 + milestone 3b (harder documents, before/after evals). Next: CI + Docker Compose. This README becomes the
+> Status: milestone 7 of 8 (CI + Docker Compose). Next: this README as a deployment memo. This README becomes the
 > deployment memo in milestone 8.
 
-## Run
+## Run in 3 commands (Docker)
+
+```bash
+git clone https://github.com/sxlimsxleh/procure-agent-lite
+```
+```bash
+cd procure-agent-lite
+```
+```bash
+docker compose up --build
+```
+
+Open http://localhost:8501, click **Process inbox**, enter a name, **Approve**. The mock SAP
+runs alongside and fails 30% of requests on purpose; the retries are visible in the audit trail.
+`docker compose run --rm demo` runs the same flow on the command line. No API key is needed
+(extraction is replayed from recordings), and the demo date is pinned to 2026-11-08 in
+`docker-compose.yml` so the result is the same whenever it runs.
+
+## Run without Docker
 
 ```bash
 make setup   # uv sync
@@ -18,6 +36,7 @@ make evals LABEL=baseline   # live run against Claude, needs .env (see .env.exam
 make erp     # mock SAP purchase order API on :8001 (FLAKY_RATE=0.3 by default)
 make demo    # inbox -> decision -> approval prompt -> PO in the mock SAP (no API key needed)
 make ui      # same flow in the Streamlit approval queue on :8501
+make up      # docker compose up --build
 ```
 
 ## What is here so far

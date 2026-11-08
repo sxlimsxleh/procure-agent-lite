@@ -1,0 +1,12 @@
+# Keep secrets, local state and caches out of the image.
+.env
+.git
+.github
+.venv
+var/
+**/__pycache__
+.pytest_cache
+.ruff_cache
+tests/
+scripts/
+evals/results/

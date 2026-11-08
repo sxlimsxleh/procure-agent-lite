@@ -1,4 +1,4 @@
-.PHONY: setup test lint dataset evals evals-recorded erp demo ui
+.PHONY: setup test lint dataset evals evals-recorded erp demo ui up
 
 setup:
 	uv sync
@@ -41,3 +41,7 @@ ui:
 	@FLAKY_RATE=$${FLAKY_RATE:-0.3} uv run uvicorn mock_erp.app:app --port 8001 --log-level warning & \
 	ERP_PID=$$!; trap 'kill $$ERP_PID' EXIT; \
 	uv run streamlit run ui/approve.py --server.headless true
+
+# Everything in containers: mock ERP on :8001, approval UI on http://localhost:8501.
+up:
+	docker compose up --build
