@@ -36,16 +36,16 @@ src/procure/
   ingest.py            # load + text-normalise docs, sha256 dedupe
   extract.py           # Claude tool-use extraction -> Quote
   ground.py            # grounding check, number/date parsing (German + English formats)
-  normalise.py         # VAT net/gross, FX -> EUR, validity vs today
+  normalise.py         # VAT net/gross, FX -> EUR, validity vs today, superseded revisions
   decide.py            # policy checks + deterministic scoring; LLM rationale citing quote ids
   erp_client.py        # httpx client, tenacity retries (503, 429 + Retry-After), idempotency key
   audit.py             # SQLite audit log
-  pipeline.py          # run(pr_id) -> RunResult; CLI entry
+  pipeline.py          # propose(pr_id) -> Proposal; approve / retry_po; CLI entry
   logging.py           # JSON logger with run_id
 mock_erp/app.py        # FastAPI: POST /sap/opu/odata/sap/API_PURCHASEORDER_PROCESS_SRV/A_PurchaseOrder
                        #          GET  .../A_PurchaseOrder ; FLAKY_RATE env (default 0.3) -> 503/429
 ui/approve.py          # Streamlit approval queue
-evals/run_evals.py     # per-field accuracy, flag precision/recall, injection + idempotency checks
+evals/run_evals.py     # per-field accuracy, flag precision/recall, injection check (idempotency: tests/test_erp.py)
 evals/recordings/      # recorded LLM responses so CI runs without an API key
 tests/
 DECISIONS.md           # my notes: decision, rejected alternative, where the AI got it wrong
